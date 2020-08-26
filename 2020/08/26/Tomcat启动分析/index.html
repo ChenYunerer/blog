@@ -12,7 +12,7 @@
 
 
 
-<title>Hello World | ChenYun&#39;s Blog</title>
+<title>ChenYun&#39;s Blog</title>
 
 
 
@@ -173,7 +173,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Hello World</h1>
+            <h1 class="post-title"></h1>
             
                 <div class="post-meta">
                     
@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">August 26, 2020&nbsp;&nbsp;21:10:14</a>
+                        Date: <a href="#">August 26, 2020&nbsp;&nbsp;22:59:36</a>
                         </span>
                     
                     
@@ -191,19 +191,103 @@
         </header>
 
         <div class="post-content">
-            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+            <h2 id="Tomcat启动分析"><a href="#Tomcat启动分析" class="headerlink" title="Tomcat启动分析"></a>Tomcat启动分析</h2><hr>
+<p>tomcat8.5启动入口：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">org.apache.catalina.startup.Bootstrap</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<p>Bootstrap.main()方法主要处理：</p>
+<ol>
+<li>构建Bootstrap对象，调用其init()方法，该方法主要处理：初始化ClassLoader，构建Catalina对象，并为其设置parentClassLoader</li>
+<li>调用Bootstrap对象的load()以及start()方法</li>
+</ol>
+<hr>
+<h3 id="Bootstrap-load-主要反射调用了Catalina对象的load方法"><a href="#Bootstrap-load-主要反射调用了Catalina对象的load方法" class="headerlink" title="Bootstrap.load()主要反射调用了Catalina对象的load方法"></a>Bootstrap.load()主要反射调用了Catalina对象的load方法</h3><p>Catalina.load()方法主要处理:</p>
+<ol>
+<li>通过Digester对象来解析server.config配置文件</li>
+<li>对解析生成的StandardServer进行设置初始化init()操作</li>
+</ol>
+<p>StandardServer.initInternal()方法主要处理：</p>
+<ol>
+<li>ClassLoader处理</li>
+<li>初始化init所有service,for调用service.init</li>
+</ol>
+<p>StandardService.initInternal()方法主要处理：</p>
+<ol>
+<li>初始化StandardEngine，调用其init方法</li>
+<li>初始化StandardThreadExecutor，调用其init方法，首次启动不存在任何executor</li>
+<li>初始化MapperListener，调用其init方法</li>
+<li>初始化所有Connector，调用其init方法</li>
+</ol>
+<p>StandardEngine.initInternal()方法主要处理：</p>
+<ol>
+<li>获取Realm</li>
+</ol>
+<p>StandardThreadExecutor.initInternal()方法主要处理:</p>
+<ol>
+<li>nothing</li>
+</ol>
+<p>MapperListener.init()方法主要处理：</p>
+<ol>
+<li>nothing</li>
+</ol>
+<p>Connector.initInternal()方法主要处理：</p>
+<ol>
+<li>构建CoyoteAdapter对象</li>
+<li>为ProtocolHandler设置adapter</li>
+<li>初始化ProtocolHandler，调用其init方法，ProtocolHandler接口存在多个实现，主要有Http11NioProtocol等</li>
+</ol>
+<p>AbstractProtocol.init()方法主要处理：</p>
+<ol>
+<li><p>初始化endpoint，调用其init方法</p>
+<ol>
+<li>bind()方法构建ServerSocketChannel并且绑定Tomcat地址和端口，初始化ssl，获取Selector，启动BlockPoller线程</li>
+</ol>
+</li>
+</ol>
+<hr>
+<h3 id="Bootstrap-start-主要反射调用了Catalina对象的start方法"><a href="#Bootstrap-start-主要反射调用了Catalina对象的start方法" class="headerlink" title="Bootstrap.start()主要反射调用了Catalina对象的start方法"></a>Bootstrap.start()主要反射调用了Catalina对象的start方法</h3><p>Catalina.start()方法主要处理:</p>
+<ol>
+<li>获取init构建好的StandardServer对象，如果该对象不存在则再次调用load方法进行初始化，如果存在则调用StandardServer的start方法</li>
+</ol>
+<p>StandardServer.startInternal()方法主要处理：</p>
+<ol>
+<li>调用所有StandardService的start方法</li>
+</ol>
+<p>StandardService.startInternal()方法主要处理：</p>
+<ol>
+<li>engine.start()<ol>
+<li>cluster.start()</li>
+<li>realm.start()</li>
+<li>childContainer.start()此处的container其实是StandardHost对象<ol>
+<li>StandardHost.startInternal()方法往pipeline添加errorValve</li>
+<li>init并且start所有valve</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>executor.start()</li>
+<li>mapperListener.start()</li>
+<li>connector.start()<ol>
+<li>protocolHandler.start()(AbstractProtocol.start())<ol>
+<li>endpoint.start() NioEndPoint<ol>
+<li>AbstractEndpoint.start()方法检测socket绑定状态，如果未绑定尝试再次bind，然后调用startInternal()<ol>
+<li>NioEndpoint.startInternal()方法主要处理：创建连接池，启动poller线程，启动acceptor线程</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<hr>
+<h3 id="tomcat接收请求"><a href="#tomcat接收请求" class="headerlink" title="tomcat接收请求"></a>tomcat接收请求</h3><ol>
+<li>acceptor线程通过ServerSocketChannel accept客户端请求</li>
+<li>如果接受到请求则调用setSocketOptions处理请求，处理过程中，封装NioChannel对象，并注册到Poller</li>
+<li>poller线程进行处理时，将NioChannel封装成PollerEvent</li>
+<li>endpoint通过SocketProcessor处理具体请求-&gt;protocolHandler-&gt;http11Processor-&gt;CoyoteAdapter-&gt;pipeline.first.invoke-&gt;ApplicationFilterChain</li>
+</ol>
 
         </div>
 
@@ -218,7 +302,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2020/08/26/hello-world/">http://blog.yuner.fun/2020/08/26/hello-world/</a></span>
+                        <span><a href="http://blog.yuner.fun/2020/08/26/Tomcat%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90/">http://blog.yuner.fun/2020/08/26/Tomcat%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%90/</a></span>
                     </p>
                 
                 
@@ -246,10 +330,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2020/08/26/APM/"></a>
+                <a class="prev" rel="prev" href="/2020/08/26/Tomcat%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%901_startup.sh/"></a>
             
             
-            <a class="next" rel="next" href="/2020/08/25/Netty/">Netty</a>
+            <a class="next" rel="next" href="/2020/08/26/String%20Cloud%20Config%20With%20Apollo/"></a>
             
         </section>
 

@@ -12,7 +12,7 @@
 
 
 
-<title>Hello World | ChenYun&#39;s Blog</title>
+<title>ChenYun&#39;s Blog</title>
 
 
 
@@ -173,7 +173,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Hello World</h1>
+            <h1 class="post-title"></h1>
             
                 <div class="post-meta">
                     
@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">August 26, 2020&nbsp;&nbsp;21:10:14</a>
+                        Date: <a href="#">August 26, 2020&nbsp;&nbsp;22:59:36</a>
                         </span>
                     
                     
@@ -191,19 +191,17 @@
         </header>
 
         <div class="post-content">
-            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+            <h1 id="Spring-AOP-Proxy"><a href="#Spring-AOP-Proxy" class="headerlink" title="Spring AOP Proxy"></a>Spring AOP Proxy</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AbstractAutoProxyCreator -&gt; ProxyFactory: wrapIfNecessary getProxy</span><br><span class="line">ProxyFactory -&gt; AopProxyFactory: createAopProxy</span><br><span class="line">AopProxyFactory -&gt; JdkDynamicAopProxy: targetClass isInterface</span><br><span class="line">AopProxyFactory -&gt; ObjenesisCglibAopProxy: targetClass is not Interface</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">DefaultAopProxyFactory.class</span><br><span class="line">    </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> AopProxy <span class="title">createAopProxy</span><span class="params">(AdvisedSupport config)</span> <span class="keyword">throws</span> AopConfigException </span>&#123;</span><br><span class="line">		<span class="keyword">if</span> (config.isOptimize() || config.isProxyTargetClass() || hasNoUserSuppliedProxyInterfaces(config)) &#123;</span><br><span class="line">			Class&lt;?&gt; targetClass = config.getTargetClass();</span><br><span class="line">			<span class="keyword">if</span> (targetClass == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">throw</span> <span class="keyword">new</span> AopConfigException(<span class="string">&quot;TargetSource cannot determine target class: &quot;</span> +</span><br><span class="line">						<span class="string">&quot;Either an interface or a target is required for proxy creation.&quot;</span>);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (targetClass.isInterface() || Proxy.isProxyClass(targetClass)) &#123;</span><br><span class="line">				<span class="keyword">return</span> <span class="keyword">new</span> JdkDynamicAopProxy(config);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">new</span> ObjenesisCglibAopProxy(config);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">new</span> JdkDynamicAopProxy(config);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<p>wrapIfNecessary调用时机：</p>
+<ol>
+<li>AbstractAutoProxyCreator实现了什么artInstantiationAwareBeanPostProcessor，在postProcessAfterInitialization中调用wrapIfNecessary尝试构建代理</li>
+<li>getEarlyBeanReference中调用wrapIfNecessary</li>
+</ol>
+<p>getEarlyBeanReference：</p>
+<p>提早暴露bean的时候，通过这个方法获取正确的对象（代理或是非代理）</p>
 
         </div>
 
@@ -218,7 +216,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2020/08/26/hello-world/">http://blog.yuner.fun/2020/08/26/hello-world/</a></span>
+                        <span><a href="http://blog.yuner.fun/2020/08/26/Spring%20AOP/">http://blog.yuner.fun/2020/08/26/Spring%20AOP/</a></span>
                     </p>
                 
                 
@@ -246,10 +244,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2020/08/26/APM/"></a>
+                <a class="prev" rel="prev" href="/2020/08/26/Spring%20Cloud%20Config%20With%20nacos/"></a>
             
             
-            <a class="next" rel="next" href="/2020/08/25/Netty/">Netty</a>
+            <a class="next" rel="next" href="/2020/08/26/Spring%20Bean%20Inject/"></a>
             
         </section>
 

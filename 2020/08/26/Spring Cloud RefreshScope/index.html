@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="ChenYun">
+
+
+
+
+
+<title>ChenYun&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.1.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">ChenYun&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">ChenYun&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title"></h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">ChenYun</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 26, 2020&nbsp;&nbsp;22:59:36</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Spring-Cloud-RefreshScope"><a href="#Spring-Cloud-RefreshScope" class="headerlink" title="Spring Cloud RefreshScope"></a>Spring Cloud RefreshScope</h1><h2 id="AbstractBeanFactory-create-bean-instance"><a href="#AbstractBeanFactory-create-bean-instance" class="headerlink" title="AbstractBeanFactory create bean instance"></a>AbstractBeanFactory create bean instance</h2><ol>
+<li>AbstractBeanFactory doGetBean通过BeanDefinition判断对象的Scope</li>
+<li>针对Singleton和Prototype做单独处理</li>
+<li>针对其他的Scope通过@Scope注解名称获取对应的Scope，比如@RefreshScope对应RefreshScope</li>
+<li>调用Scope get方法获取scopedInstance</li>
+<li>Get Object For Bean Instance</li>
+</ol>
+<p>对于以上的第4部分：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">AbstractBeanFactory.class</span><br><span class="line">    </span><br><span class="line"><span class="comment">//调用对应的scope的get方法，传入beanName以及ObjectFactory，进行对象获取</span></span><br><span class="line">Object scopedInstance = scope.get(beanName, () -&gt; &#123;</span><br><span class="line">		beforePrototypeCreation(beanName);</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//通过createBean方法构建scopedInstance</span></span><br><span class="line">			<span class="keyword">return</span> createBean(beanName, mbd, args);</span><br><span class="line">			&#125;</span><br><span class="line">		<span class="keyword">finally</span> &#123;</span><br><span class="line">			afterPrototypeCreation(beanName);</span><br><span class="line">			&#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">GenericScope.class</span><br><span class="line">    </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">get</span><span class="params">(String name, ObjectFactory&lt;?&gt; objectFactory)</span> </span>&#123;</span><br><span class="line">   <span class="comment">//构建BeanLifecycleWrapper并放入缓存进行维护</span></span><br><span class="line">   BeanLifecycleWrapper value = <span class="keyword">this</span>.cache.put(name,</span><br><span class="line">         <span class="keyword">new</span> BeanLifecycleWrapper(name, objectFactory));</span><br><span class="line">   <span class="keyword">this</span>.locks.putIfAbsent(name, <span class="keyword">new</span> ReentrantReadWriteLock());</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> value.getBean();</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">catch</span> (RuntimeException e) &#123;</span><br><span class="line">      <span class="keyword">this</span>.errors.put(name, e);</span><br><span class="line">      <span class="keyword">throw</span> e;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//返回bean如果bean为null则通过objectFactory进行创建</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">getBean</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">this</span>.bean == <span class="keyword">null</span>) &#123;</span><br><span class="line">		<span class="keyword">synchronized</span> (<span class="keyword">this</span>.name) &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="keyword">this</span>.bean == <span class="keyword">null</span>) &#123;</span><br><span class="line">				<span class="keyword">this</span>.bean = <span class="keyword">this</span>.objectFactory.getObject();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">this</span>.bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出Scope其实最主要的就是维护了一个Cache，实际的构建Bean的过程还是由BeanFactory的createBean来创建</strong></p>
+<h2 id="RefreshScope"><a href="#RefreshScope" class="headerlink" title="RefreshScope"></a>RefreshScope</h2><h3 id="继承关系"><a href="#继承关系" class="headerlink" title="继承关系"></a>继承关系</h3><pre class="mermaid">classDiagram
+class Scope {
+get(String name, ObjectFactory<?> objectFactory);Object
+remove(String name);Object
+registerDestructionCallback(String name, Runnable callback);void
+resolveContextualObject(String key);Object
+getConversationId();String
+}
+class GenericScope {
+private String name;
+private BeanLifecycleWrapperCache cache;
+......
+}
+class RefreshScope {
+ refresh(String name);boolean
+ refreshAll();void
+ ......
+}
+Scope <|-- GenericScope
+GenericScope <|-- RefreshScope</pre>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">RefreshScope.class</span><br><span class="line">    </span><br><span class="line"><span class="comment">//RefreshScope刷新</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">refresh</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (!name.startsWith(SCOPED_TARGET_PREFIX)) &#123;</span><br><span class="line">      <span class="comment">// User wants to refresh the bean with this name but that isn&#x27;t the one in the</span></span><br><span class="line">      <span class="comment">// cache...</span></span><br><span class="line">      name = SCOPED_TARGET_PREFIX + name;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="comment">// Ensure lifecycle is finished if bean was disposable</span></span><br><span class="line">   <span class="comment">//调用父类GenericScope destroy方法传入对应的bean名称来销毁对应的bean</span></span><br><span class="line">   <span class="keyword">if</span> (<span class="keyword">super</span>.destroy(name)) &#123;</span><br><span class="line">      <span class="keyword">this</span>.context.publishEvent(<span class="keyword">new</span> RefreshScopeRefreshedEvent(name));</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">GenericScope.class</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">boolean</span> <span class="title">destroy</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//从cache获取对应的BeanLifecycleWrapper</span></span><br><span class="line">   BeanLifecycleWrapper wrapper = <span class="keyword">this</span>.cache.remove(name);</span><br><span class="line">   <span class="keyword">if</span> (wrapper != <span class="keyword">null</span>) &#123;</span><br><span class="line">      Lock lock = <span class="keyword">this</span>.locks.get(wrapper.getName()).writeLock();</span><br><span class="line">      lock.lock();</span><br><span class="line">      <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="comment">//调用destroy方法</span></span><br><span class="line">         wrapper.destroy();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">finally</span> &#123;</span><br><span class="line">         lock.unlock();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">this</span>.errors.remove(name);</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">BeanLifecycleWrapper.class</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="keyword">if</span> (<span class="keyword">this</span>.callback == <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span>;</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">synchronized</span> (<span class="keyword">this</span>.name) &#123;</span><br><span class="line">      <span class="comment">//通过BeanLifecycleWrapper的callback来进行实际的bean的销毁工作</span></span><br><span class="line">      <span class="comment">//该callback其实就是DisposableBeanAdapter</span></span><br><span class="line">      Runnable callback = <span class="keyword">this</span>.callback;</span><br><span class="line">      <span class="keyword">if</span> (callback != <span class="keyword">null</span>) &#123;</span><br><span class="line">         callback.run();</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">this</span>.callback = <span class="keyword">null</span>;</span><br><span class="line">      <span class="keyword">this</span>.bean = <span class="keyword">null</span>;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Bean刷新总结"><a href="#Bean刷新总结" class="headerlink" title="Bean刷新总结"></a>Bean刷新总结</h3><ol>
+<li>RefreshScope的refresh方法调用其父类GenericScope的destroy</li>
+<li>GenericScope destroy从cache中获取对应bean name的BeanLifecycleWrapper，并调用其destroy方法</li>
+<li>BeanLifecycleWrapper destroy方法通过callback来进行实际的对象销毁工作</li>
+<li>对象销毁之后，如果再次需要该对象则会再次通过BeanFactory进行重新构建，以此达到Bean的刷新</li>
+</ol>
+<h2 id="什么时候进行Bean刷新"><a href="#什么时候进行Bean刷新" class="headerlink" title="什么时候进行Bean刷新"></a>什么时候进行Bean刷新</h2><ol>
+<li>RefreshEndpoint触发</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RefreshEndpoint -&gt; ContextRefresher:contextRefresher.refresh()</span><br><span class="line">ContextRefresher -&gt; RefreshScope: scope.refreshAll()</span><br><span class="line">RefreshScope -&gt; GenericScope: destroy()</span><br></pre></td></tr></table></figure>
+
+<p>2.RefreshEvent事件触发</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RefreshEventListener -&gt; RefreshEventListener: listener RefreshEvent</span><br><span class="line">RefreshEventListener -&gt; RefreshEventListener: handle</span><br><span class="line">RefreshEventListener -&gt; ContextRefresher: refresh.refresh()</span><br><span class="line">ContextRefresher -&gt; RefreshScope: scope.refreshAll()</span><br><span class="line">RefreshScope -&gt; GenericScope: destroy()</span><br></pre></td></tr></table></figure>
+
+<p>通常配置中心类似NacosConfig都会在更新PropertySources之后发送RefreshEvent进行Bean刷新</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">NacosContextRefresher.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">registerNacosListener</span><span class="params">(<span class="keyword">final</span> String groupKey, <span class="keyword">final</span> String dataKey)</span> </span>&#123;</span><br><span class="line">   String key = NacosPropertySourceRepository.getMapKey(dataKey, groupKey);</span><br><span class="line">   Listener listener = listenerMap.computeIfAbsent(key,</span><br><span class="line">         lst -&gt; <span class="keyword">new</span> AbstractSharedListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">innerReceive</span><span class="params">(String dataId, String group,</span></span></span><br><span class="line"><span class="function"><span class="params">                  String configInfo)</span> </span>&#123;</span><br><span class="line">               refreshCountIncrement();</span><br><span class="line">               nacosRefreshHistory.addRefreshRecord(dataId, group, configInfo);</span><br><span class="line">               <span class="comment">// todo feature: support single refresh for listening</span></span><br><span class="line">               <span class="comment">// 发送RefreshEvent事件触发bean刷新</span></span><br><span class="line">               applicationContext.publishEvent(</span><br><span class="line">                     <span class="keyword">new</span> RefreshEvent(<span class="keyword">this</span>, <span class="keyword">null</span>, <span class="string">&quot;Refresh Nacos config&quot;</span>));</span><br><span class="line">               <span class="keyword">if</span> (log.isDebugEnabled()) &#123;</span><br><span class="line">                  log.debug(String.format(</span><br><span class="line">                        <span class="string">&quot;Refresh Nacos config group=%s,dataId=%s,configInfo=%s&quot;</span>,</span><br><span class="line">                        group, dataId, configInfo));</span><br><span class="line">               &#125;</span><br><span class="line">            &#125;</span><br><span class="line">         &#125;);</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">      configService.addListener(dataKey, groupKey, listener);</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">catch</span> (NacosException e) &#123;</span><br><span class="line">      log.warn(String.format(</span><br><span class="line">            <span class="string">&quot;register fail for nacos listener ,dataId=[%s],group=[%s]&quot;</span>, dataKey,</span><br><span class="line">            groupKey), e);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>ChenYun</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://blog.yuner.fun/2020/08/26/Spring%20Cloud%20RefreshScope/">http://blog.yuner.fun/2020/08/26/Spring%20Cloud%20RefreshScope/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/08/26/Spring%20IOC/"></a>
+            
+            
+            <a class="next" rel="next" href="/2020/08/26/Spring%20Cloud%20OpenFeign%203/"></a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© ChenYun | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
+    }
+  </script>
+</footer>
+
+    </div>
+</body>
+</html>

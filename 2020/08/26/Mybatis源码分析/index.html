@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="ChenYun">
+
+
+
+
+
+<title>ChenYun&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.1.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">ChenYun&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">ChenYun&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title"></h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">ChenYun</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 26, 2020&nbsp;&nbsp;22:59:36</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Mybatis源码分析"><a href="#Mybatis源码分析" class="headerlink" title="Mybatis源码分析"></a>Mybatis源码分析</h2><hr>
+<h3 id="MybatisAutoConfigurationg构建SqlSessionFactory："><a href="#MybatisAutoConfigurationg构建SqlSessionFactory：" class="headerlink" title="MybatisAutoConfigurationg构建SqlSessionFactory："></a>MybatisAutoConfigurationg构建SqlSessionFactory：</h3><p>通过SqlSessionFactoryBean构建SqlSessionFactory，构建过程中：</p>
+<ol>
+<li>构建configuration，通过MybatisProperties对SqlSessionFactoryBean进行赋值，接下来构建SqlSessionFactory</li>
+<li>通过XMLConfigBuilder解析配置文件</li>
+<li>对configuration对象再做处理，配置typeAlias、plugin、typeHandlersPackage、typeHandlers、databaseIdProvider、cache</li>
+<li>设置默认的transactionFactory为SpringManagedTransactionFactory</li>
+<li>设置Environment(environment(SqlSessionFactoryBean.class.getSimpleName)， transactionFactory， dataSource)</li>
+<li>通过XMLMapperBuilder对每个Mapper XML进行解析</li>
+<li>最后通过以上的所有步骤产生的configuration去构建最后的SqlSessionFactory</li>
+</ol>
+<h3 id="MybatisAutoConfigurationg构建SqlSessionTemplate："><a href="#MybatisAutoConfigurationg构建SqlSessionTemplate：" class="headerlink" title="MybatisAutoConfigurationg构建SqlSessionTemplate："></a>MybatisAutoConfigurationg构建SqlSessionTemplate：</h3><p>通过sqlSessionFactory构建SqlSessionTemplate</p>
+<hr>
+<h3 id="TypeAliasRegistry"><a href="#TypeAliasRegistry" class="headerlink" title="TypeAliasRegistry"></a>TypeAliasRegistry</h3><p>维护Map&lt;String, Class&lt;?&gt;&gt; TYPE_ALIASES，key 是 别名 value 是 Type Class，默认存在一些基础类型以及其包装类的别名</p>
+<p>registerAliases方法通过对typeAliasesPackage解析，往TYPE_ALIASES塞值</p>
+<h3 id="InterceptorChain"><a href="#InterceptorChain" class="headerlink" title="InterceptorChain"></a>InterceptorChain</h3><p>维护List<Interceptor> interceptors</p>
+<p>addInterceptor方法往interceptors添加拦截器</p>
+<h3 id="TypeHandlerRegistry"><a href="#TypeHandlerRegistry" class="headerlink" title="TypeHandlerRegistry"></a>TypeHandlerRegistry</h3><p>维护Map&lt;Type, Map&lt;JdbcType, TypeHandler&lt;?&gt;&gt;&gt; TYPE_HANDLER_MAP，默认存在基础类型的TypeHandler</p>
+<h3 id="databaseIdProvider"><a href="#databaseIdProvider" class="headerlink" title="databaseIdProvider"></a>databaseIdProvider</h3><p>通过DataSource获取connection，通过connection.getMetaData获取DatabaseProductName</p>
+<p>为configure设置databaseId，用以处理针对不同厂商的sql语句</p>
+<h3 id="MapperXML解析"><a href="#MapperXML解析" class="headerlink" title="MapperXML解析"></a>MapperXML解析</h3><p>对xml各个标签进行解析，最终构建MappedStatement由configuration维护：Map&lt;String, MappedStatement&gt; mappedStatements</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">parseStatementNode</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">//以下获取各种参数</span></span><br><span class="line">  String id = context.getStringAttribute(<span class="string">&quot;id&quot;</span>);</span><br><span class="line">  String databaseId = context.getStringAttribute(<span class="string">&quot;databaseId&quot;</span>);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (!databaseIdMatchesCurrent(id, databaseId, <span class="keyword">this</span>.requiredDatabaseId)) &#123;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  Integer fetchSize = context.getIntAttribute(<span class="string">&quot;fetchSize&quot;</span>);</span><br><span class="line">  Integer timeout = context.getIntAttribute(<span class="string">&quot;timeout&quot;</span>);</span><br><span class="line">  String parameterMap = context.getStringAttribute(<span class="string">&quot;parameterMap&quot;</span>);</span><br><span class="line">  String parameterType = context.getStringAttribute(<span class="string">&quot;parameterType&quot;</span>);</span><br><span class="line">  Class&lt;?&gt; parameterTypeClass = resolveClass(parameterType);</span><br><span class="line">  String resultMap = context.getStringAttribute(<span class="string">&quot;resultMap&quot;</span>);</span><br><span class="line">  String resultType = context.getStringAttribute(<span class="string">&quot;resultType&quot;</span>);</span><br><span class="line">  String lang = context.getStringAttribute(<span class="string">&quot;lang&quot;</span>);</span><br><span class="line">  LanguageDriver langDriver = getLanguageDriver(lang);</span><br><span class="line"></span><br><span class="line">  Class&lt;?&gt; resultTypeClass = resolveClass(resultType);</span><br><span class="line">  String resultSetType = context.getStringAttribute(<span class="string">&quot;resultSetType&quot;</span>);</span><br><span class="line">  StatementType statementType = StatementType.valueOf(context.getStringAttribute(<span class="string">&quot;statementType&quot;</span>, StatementType.PREPARED.toString()));</span><br><span class="line">  ResultSetType resultSetTypeEnum = resolveResultSetType(resultSetType);</span><br><span class="line"></span><br><span class="line">  String nodeName = context.getNode().getNodeName();</span><br><span class="line">  SqlCommandType sqlCommandType = SqlCommandType.valueOf(nodeName.toUpperCase(Locale.ENGLISH));</span><br><span class="line">  <span class="keyword">boolean</span> isSelect = sqlCommandType == SqlCommandType.SELECT;</span><br><span class="line">  <span class="keyword">boolean</span> flushCache = context.getBooleanAttribute(<span class="string">&quot;flushCache&quot;</span>, !isSelect);</span><br><span class="line">  <span class="comment">//select语句默认使用cache</span></span><br><span class="line">  <span class="keyword">boolean</span> useCache = context.getBooleanAttribute(<span class="string">&quot;useCache&quot;</span>, isSelect);</span><br><span class="line">  <span class="keyword">boolean</span> resultOrdered = context.getBooleanAttribute(<span class="string">&quot;resultOrdered&quot;</span>, <span class="keyword">false</span>);</span><br><span class="line"></span><br><span class="line">  <span class="comment">//引入sql片段构成完整的sql语句</span></span><br><span class="line">  <span class="comment">// Include Fragments before parsing</span></span><br><span class="line">  XMLIncludeTransformer includeParser = <span class="keyword">new</span> XMLIncludeTransformer(configuration, builderAssistant);</span><br><span class="line">  includeParser.applyIncludes(context.getNode());</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Parse selectKey after includes and remove them.</span></span><br><span class="line">  processSelectKeyNodes(id, parameterTypeClass, langDriver);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//构建sqlSource 此方法中会对#&#123;&#125;进行处理，使用对应的handler对各种动态sql进行处理</span></span><br><span class="line">  <span class="comment">// Parse the SQL (pre: &lt;selectKey&gt; and &lt;include&gt; were parsed and removed)</span></span><br><span class="line">  SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);</span><br><span class="line">  String resultSets = context.getStringAttribute(<span class="string">&quot;resultSets&quot;</span>);</span><br><span class="line">  String keyProperty = context.getStringAttribute(<span class="string">&quot;keyProperty&quot;</span>);</span><br><span class="line">  String keyColumn = context.getStringAttribute(<span class="string">&quot;keyColumn&quot;</span>);</span><br><span class="line">  </span><br><span class="line">  <span class="comment">//主键生成器</span></span><br><span class="line">  KeyGenerator keyGenerator;</span><br><span class="line">  String keyStatementId = id + SelectKeyGenerator.SELECT_KEY_SUFFIX;</span><br><span class="line">  keyStatementId = builderAssistant.applyCurrentNamespace(keyStatementId, <span class="keyword">true</span>);</span><br><span class="line">  <span class="keyword">if</span> (configuration.hasKeyGenerator(keyStatementId)) &#123;</span><br><span class="line">    keyGenerator = configuration.getKeyGenerator(keyStatementId);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    keyGenerator = context.getBooleanAttribute(<span class="string">&quot;useGeneratedKeys&quot;</span>,</span><br><span class="line">        configuration.isUseGeneratedKeys() &amp;&amp; SqlCommandType.INSERT.equals(sqlCommandType))</span><br><span class="line">        ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//构建statementBuilder，并且交由configuration维护</span></span><br><span class="line">  builderAssistant.addMappedStatement(id, sqlSource, statementType, sqlCommandType,</span><br><span class="line">      fetchSize, timeout, parameterMap, parameterTypeClass, resultMap, resultTypeClass,</span><br><span class="line">      resultSetTypeEnum, flushCache, useCache, resultOrdered, </span><br><span class="line">      keyGenerator, keyProperty, keyColumn, databaseId, langDriver, resultSets);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>MapperXML解析完成后，构建对应的Mapper的MapperProxyFactory由MapperProxyFactory进行维护</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">XMLMapperBuilder.class</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">bindMapperForNamespace</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  String namespace = builderAssistant.getCurrentNamespace();</span><br><span class="line">  <span class="keyword">if</span> (namespace != <span class="keyword">null</span>) &#123;</span><br><span class="line">    Class&lt;?&gt; boundType = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      boundType = Resources.classForName(namespace);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">      <span class="comment">//ignore, bound type is not required</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (boundType != <span class="keyword">null</span>) &#123;</span><br><span class="line">      <span class="keyword">if</span> (!configuration.hasMapper(boundType)) &#123;</span><br><span class="line">        <span class="comment">// Spring may not know the real resource name so we set a flag</span></span><br><span class="line">        <span class="comment">// to prevent loading again this resource from the mapper interface</span></span><br><span class="line">        <span class="comment">// look at MapperAnnotationBuilder#loadXmlResource</span></span><br><span class="line">        configuration.addLoadedResource(<span class="string">&quot;namespace:&quot;</span> + namespace);</span><br><span class="line">        <span class="comment">//调用configuration的addMapper方法添加mapper，实际由configuration中的MapperRegistry来进行处理</span></span><br><span class="line">        configuration.addMapper(boundType);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">MapperRegistry.class</span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function"><span class="keyword">void</span> <span class="title">addMapper</span><span class="params">(Class&lt;T&gt; type)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (type.isInterface()) &#123;</span><br><span class="line">    <span class="keyword">if</span> (hasMapper(type)) &#123;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> BindingException(<span class="string">&quot;Type &quot;</span> + type + <span class="string">&quot; is already known to the MapperRegistry.&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">boolean</span> loadCompleted = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">//构建MapperProxyFactory</span></span><br><span class="line">      knownMappers.put(type, <span class="keyword">new</span> MapperProxyFactory&lt;T&gt;(type));</span><br><span class="line">      <span class="comment">// It&#x27;s important that the type is added before the parser is run</span></span><br><span class="line">      <span class="comment">// otherwise the binding may automatically be attempted by the</span></span><br><span class="line">      <span class="comment">// mapper parser. If the type is already known, it won&#x27;t try.</span></span><br><span class="line">      MapperAnnotationBuilder parser = <span class="keyword">new</span> MapperAnnotationBuilder(config, type);</span><br><span class="line">      parser.parse();</span><br><span class="line">      loadCompleted = <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (!loadCompleted) &#123;</span><br><span class="line">        knownMappers.remove(type);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="AutoConfiguredMapperScannerRegistrar"><a href="#AutoConfiguredMapperScannerRegistrar" class="headerlink" title="AutoConfiguredMapperScannerRegistrar"></a>AutoConfiguredMapperScannerRegistrar</h3><p>扫描多有Mapper注解标注的接口，为对应接口的BeanDifinition设置BeanClass为mapperFactoryBean。</p>
+<p>在注入对应Mapper对象的时候，通过MapperFactoryBean获取对应Mapper Interface的MapperProxyFactory，</p>
+<p>通过MapperProxyFactory构建MapperProxy</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">ClassPathMapperScanner.class</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">processBeanDefinitions</span><span class="params">(Set&lt;BeanDefinitionHolder&gt; beanDefinitions)</span> </span>&#123;</span><br><span class="line">  GenericBeanDefinition definition;</span><br><span class="line">  <span class="keyword">for</span> (BeanDefinitionHolder holder : beanDefinitions) &#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//设置BeanClass为mapperFactoryBean</span></span><br><span class="line">    definition.setBeanClass(<span class="keyword">this</span>.mapperFactoryBean.getClass());</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">MapperFactoryBean.class</span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> T <span class="title">getObject</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">	<span class="comment">//MapperFactoryBean在构建对象时，调用SqlSession的getMapper获取对象</span></span><br><span class="line">  <span class="comment">//SqlSession的getMapper又通过configuration获的getMapper获取对象</span></span><br><span class="line">  <span class="comment">//configuration获的getMapper又通过mapperRegistry的getMapper获取对象</span></span><br><span class="line">  <span class="keyword">return</span> getSqlSession().getMapper(<span class="keyword">this</span>.mapperInterface);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">MapperRegistry.class</span><br><span class="line"><span class="keyword">public</span> &lt;T&gt; <span class="function">T <span class="title">getMapper</span><span class="params">(Class&lt;T&gt; type, SqlSession sqlSession)</span> </span>&#123;</span><br><span class="line">  <span class="comment">//获取MapperProxyFactory</span></span><br><span class="line">  <span class="keyword">final</span> MapperProxyFactory&lt;T&gt; mapperProxyFactory = (MapperProxyFactory&lt;T&gt;) knownMappers.get(type);</span><br><span class="line">  <span class="keyword">if</span> (mapperProxyFactory == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> BindingException(<span class="string">&quot;Type &quot;</span> + type + <span class="string">&quot; is not known to the MapperRegistry.&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">try</span> &#123;</span><br><span class="line">    <span class="comment">//构建MapperProxy JAVA动态代理对象</span></span><br><span class="line">    <span class="keyword">return</span> mapperProxyFactory.newInstance(sqlSession);</span><br><span class="line">  &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> BindingException(<span class="string">&quot;Error getting mapper instance. Cause: &quot;</span> + e, e);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Mapper-Interface方法调用分析（sql执行流程分析）"><a href="#Mapper-Interface方法调用分析（sql执行流程分析）" class="headerlink" title="Mapper Interface方法调用分析（sql执行流程分析）"></a>Mapper Interface方法调用分析（sql执行流程分析）</h3><p>根据以上说明，注入的Mapper对象其实是对应的apperProxy也就是其动态代理对象，其中invoke方法的调用主要调用了MapperMethod的execute方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">MapperMethod.class</span><br><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">execute</span><span class="params">(SqlSession sqlSession, Object[] args)</span> </span>&#123;</span><br><span class="line">  Object result;</span><br><span class="line">  <span class="keyword">switch</span> (command.getType()) &#123;</span><br><span class="line">    <span class="keyword">case</span> INSERT: &#123;</span><br><span class="line">    Object param = method.convertArgsToSqlCommandParam(args);</span><br><span class="line">      result = rowCountResult(sqlSession.insert(command.getName(), param));</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> UPDATE: &#123;</span><br><span class="line">      Object param = method.convertArgsToSqlCommandParam(args);</span><br><span class="line">      result = rowCountResult(sqlSession.update(command.getName(), param));</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> DELETE: &#123;</span><br><span class="line">      Object param = method.convertArgsToSqlCommandParam(args);</span><br><span class="line">      result = rowCountResult(sqlSession.delete(command.getName(), param));</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">case</span> SELECT:</span><br><span class="line">      <span class="keyword">if</span> (method.returnsVoid() &amp;&amp; method.hasResultHandler()) &#123;</span><br><span class="line">        executeWithResultHandler(sqlSession, args);</span><br><span class="line">        result = <span class="keyword">null</span>;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method.returnsMany()) &#123;</span><br><span class="line">        result = executeForMany(sqlSession, args);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method.returnsMap()) &#123;</span><br><span class="line">        result = executeForMap(sqlSession, args);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (method.returnsCursor()) &#123;</span><br><span class="line">        result = executeForCursor(sqlSession, args);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        Object param = method.convertArgsToSqlCommandParam(args);</span><br><span class="line">        result = sqlSession.selectOne(command.getName(), param);</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> FLUSH:</span><br><span class="line">      result = sqlSession.flushStatements();</span><br><span class="line">      <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> BindingException(<span class="string">&quot;Unknown execution method for: &quot;</span> + command.getName());</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (result == <span class="keyword">null</span> &amp;&amp; method.getReturnType().isPrimitive() &amp;&amp; !method.returnsVoid()) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> BindingException(<span class="string">&quot;Mapper method &#x27;&quot;</span> + command.getName() </span><br><span class="line">        + <span class="string">&quot; attempted to return null from a method with a primitive return type (&quot;</span> + method.getReturnType() + <span class="string">&quot;).&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> result;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>ChenYun</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://blog.yuner.fun/2020/08/26/Mybatis%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">http://blog.yuner.fun/2020/08/26/Mybatis%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/08/26/NIO/"></a>
+            
+            
+            <a class="next" rel="next" href="/2020/08/26/Mysql%20InnoDB/"></a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© ChenYun | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
+    }
+  </script>
+</footer>
+
+    </div>
+</body>
+</html>
