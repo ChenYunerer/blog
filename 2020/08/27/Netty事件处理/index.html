@@ -191,7 +191,20 @@
         </header>
 
         <div class="post-content">
-            <h1 id="Netty事件处理"><a href="#Netty事件处理" class="headerlink" title="Netty事件处理"></a>Netty事件处理</h1>
+            <h1 id="Netty事件处理"><a href="#Netty事件处理" class="headerlink" title="Netty事件处理"></a>Netty事件处理</h1><h2 id="大体流程"><a href="#大体流程" class="headerlink" title="大体流程"></a>大体流程</h2><pre class="mermaid">sequenceDiagram
+NioEventLoop -> NioEventLoop: run()
+NioEventLoop -> Selector: 不断循环判断Selector是否有Selectedkey
+NioEventLoop -> NioMessageUnsafe: 如果存在Selectedkey则掉用unsafe.read();
+NioMessageUnsafe -> NioMessageUnsafe: 读取数据到readBuf
+NioMessageUnsafe -> Pipeline: pipeline.fireChannelRead(readBuf.get(i))<br/>数据交由pipeline处理</pre>
+
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><ol>
+<li>NioEventLoop线程run方法，不断循环从selector中判断是否有未处理的Selectedkey</li>
+<li>如果存在则调用unsafe.read进行读取，unsafe的实现是：NioMessageUnsafe</li>
+<li>NioMessageUnsafe的read方法，将数据读取写到readBuf（List<Object>）</li>
+<li>然后调用pipeline.fireChannelRead(readBuf.get(i));将数据交由pipeline管道进行处理</li>
+</ol>
+
         </div>
 
         
