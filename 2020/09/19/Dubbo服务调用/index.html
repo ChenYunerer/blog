@@ -12,7 +12,7 @@
 
 
 
-<title>Sharding-jdbc | ChenYun&#39;s Blog</title>
+<title>Dubbo服务调用 | ChenYun&#39;s Blog</title>
 
 
 
@@ -107,11 +107,73 @@
             <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Sharding-jdbc</h1>
+            <h1 class="post-title">Dubbo服务调用</h1>
             
                 <div class="post-meta">
                     
@@ -120,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">August 26, 2020&nbsp;&nbsp;22:59:36</a>
+                        Date: <a href="#">September 19, 2020&nbsp;&nbsp;21:00:53</a>
                         </span>
                     
                     
@@ -129,7 +191,13 @@
         </header>
 
         <div class="post-content">
-            
+            <h1 id="Dubbo服务调用"><a href="#Dubbo服务调用" class="headerlink" title="Dubbo服务调用"></a>Dubbo服务调用</h1><h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><ol>
+<li>ReferenceAnnotationBeanPostProcessor扫描Reference注解</li>
+<li>构建ReferenceBean</li>
+<li>通过ReferenceBean构建代理对象注入容器</li>
+<li>代理方法使用Invoker（DubboInvoker）调用服务</li>
+</ol>
+<h3 id="关键代码"><a href="#关键代码" class="headerlink" title="关键代码"></a>关键代码</h3>
         </div>
 
         
@@ -143,7 +211,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2020/08/26/Sharding-jdbc/">http://blog.yuner.fun/2020/08/26/Sharding-jdbc/</a></span>
+                        <span><a href="http://blog.yuner.fun/2020/09/19/Dubbo%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8/">http://blog.yuner.fun/2020/09/19/Dubbo%E6%9C%8D%E5%8A%A1%E8%B0%83%E7%94%A8/</a></span>
                     </p>
                 
                 
@@ -171,10 +239,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2020/08/26/Spring%20AOP/">Spring AOP</a>
+                <a class="prev" rel="prev" href="/2020/09/19/Dubbo%E6%9C%8D%E5%8A%A1%E6%9A%B4%E9%9C%B2/">Dubbo源码笔记</a>
             
             
-            <a class="next" rel="next" href="/2020/08/26/Sentinel/">Sentinel</a>
+            <a class="next" rel="next" href="/2020/09/19/Dubbo%20SPI/">Dubbo SPI</a>
             
         </section>
 
