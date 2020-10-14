@@ -12,7 +12,7 @@
 
 
 
-<title>Dubbo源码笔记 | ChenYun&#39;s Blog</title>
+<title>Dubbo服务暴露 | ChenYun&#39;s Blog</title>
 
 
 
@@ -173,7 +173,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Dubbo源码笔记</h1>
+            <h1 class="post-title">Dubbo服务暴露</h1>
             
                 <div class="post-meta">
                     
@@ -191,7 +191,7 @@
         </header>
 
         <div class="post-content">
-            <h1 id="Dubbo源码笔记（以dubbo协议-netty服务为例）"><a href="#Dubbo源码笔记（以dubbo协议-netty服务为例）" class="headerlink" title="Dubbo源码笔记（以dubbo协议 netty服务为例）"></a>Dubbo源码笔记（以dubbo协议 netty服务为例）</h1><h2 id="服务暴露"><a href="#服务暴露" class="headerlink" title="服务暴露"></a>服务暴露</h2><h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><ol>
+            <h1 id="Dubbo服务暴露（以dubbo协议-netty服务为例）"><a href="#Dubbo服务暴露（以dubbo协议-netty服务为例）" class="headerlink" title="Dubbo服务暴露（以dubbo协议 netty服务为例）"></a>Dubbo服务暴露（以dubbo协议 netty服务为例）</h1><h2 id="服务暴露"><a href="#服务暴露" class="headerlink" title="服务暴露"></a>服务暴露</h2><h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><ol>
 <li>ServiceAnnotationBeanPostProcessor扫描Service注解，并构建BeanDefinition，BeanClass为：ServiceBean</li>
 <li>ServiceBean export()方法将服务进行对外暴露</li>
 <li>具体暴露逻辑由协议（Protocol）来实现</li>
