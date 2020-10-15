@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="ChenYun">
+
+
+
+
+
+<title>RocketMQ Producer | ChenYun&#39;s Blog</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.1.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">ChenYun&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">ChenYun&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">RocketMQ Producer</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">ChenYun</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 15, 2020&nbsp;&nbsp;21:11:32</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="RocketMQ-Producer"><a href="#RocketMQ-Producer" class="headerlink" title="RocketMQ Producer"></a>RocketMQ Producer</h1><p><strong>源码基于：4.7.1</strong></p>
+<h2 id="用例-普通消息，非事务消息"><a href="#用例-普通消息，非事务消息" class="headerlink" title="用例(普通消息，非事务消息)"></a>用例(普通消息，非事务消息)</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SyncProducer</span> </span>&#123;</span><br><span class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    	<span class="comment">// 实例化消息生产者Producer</span></span><br><span class="line">        DefaultMQProducer producer = <span class="keyword">new</span> DefaultMQProducer(<span class="string">&quot;please_rename_unique_group_name&quot;</span>);</span><br><span class="line">    	<span class="comment">// 设置NameServer的地址</span></span><br><span class="line">    	producer.setNamesrvAddr(<span class="string">&quot;localhost:9876&quot;</span>);</span><br><span class="line">    	<span class="comment">// 启动Producer实例</span></span><br><span class="line">        producer.start();</span><br><span class="line">    	<span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">100</span>; i++) &#123;</span><br><span class="line">    	    <span class="comment">// 创建消息，并指定Topic，Tag和消息体</span></span><br><span class="line">    	    Message msg = <span class="keyword">new</span> Message(<span class="string">&quot;TopicTest&quot;</span> <span class="comment">/* Topic */</span>,</span><br><span class="line">        	<span class="string">&quot;TagA&quot;</span> <span class="comment">/* Tag */</span>,</span><br><span class="line">        	(<span class="string">&quot;Hello RocketMQ &quot;</span> + i).getBytes(RemotingHelper.DEFAULT_CHARSET) <span class="comment">/* Message body */</span></span><br><span class="line">        	);</span><br><span class="line">        	<span class="comment">// 发送消息到一个Broker</span></span><br><span class="line">            SendResult sendResult = producer.send(msg);</span><br><span class="line">            <span class="comment">// 通过sendResult返回消息是否成功送达</span></span><br><span class="line">            System.out.printf(<span class="string">&quot;%s%n&quot;</span>, sendResult);</span><br><span class="line">    	&#125;</span><br><span class="line">    	<span class="comment">// 如果不再发送消息，关闭Producer实例。</span></span><br><span class="line">    	producer.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="DefaultMQProducer构建"><a href="#DefaultMQProducer构建" class="headerlink" title="DefaultMQProducer构建"></a>DefaultMQProducer构建</h2><ol>
+<li>DefaultMQProducer namespace producerGroup赋值</li>
+<li>DefaultMQProducerImpl对象构建</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">DefaultMQProducerImpl.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">DefaultMQProducerImpl</span><span class="params">(<span class="keyword">final</span> DefaultMQProducer defaultMQProducer, RPCHook rpcHook)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.defaultMQProducer = defaultMQProducer;</span><br><span class="line">    <span class="keyword">this</span>.rpcHook = rpcHook;</span><br><span class="line">    <span class="comment">//构建Executor用于发送异步消息</span></span><br><span class="line">    <span class="comment">//Executor线程池核心大小和最大大小都为CPU核心数</span></span><br><span class="line">    <span class="keyword">this</span>.asyncSenderThreadPoolQueue = <span class="keyword">new</span> LinkedBlockingQueue&lt;Runnable&gt;(<span class="number">50000</span>);</span><br><span class="line">    <span class="keyword">this</span>.defaultAsyncSenderExecutor = <span class="keyword">new</span> ThreadPoolExecutor(</span><br><span class="line">        Runtime.getRuntime().availableProcessors(),</span><br><span class="line">        Runtime.getRuntime().availableProcessors(),</span><br><span class="line">        <span class="number">1000</span> * <span class="number">60</span>,</span><br><span class="line">        TimeUnit.MILLISECONDS,</span><br><span class="line">        <span class="keyword">this</span>.asyncSenderThreadPoolQueue,</span><br><span class="line">        <span class="keyword">new</span> ThreadFactory() &#123;</span><br><span class="line">            <span class="keyword">private</span> AtomicInteger threadIndex = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> Thread <span class="title">newThread</span><span class="params">(Runnable r)</span> </span>&#123;</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">new</span> Thread(r, <span class="string">&quot;AsyncSenderExecutor_&quot;</span> + <span class="keyword">this</span>.threadIndex.incrementAndGet());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="DefaultMQProducer-start"><a href="#DefaultMQProducer-start" class="headerlink" title="DefaultMQProducer start"></a>DefaultMQProducer start</h2><p>DefaultMQProducer start方法重要处理：</p>
+<ol>
+<li>调用defaultMQProducerImpl(DefaultMQProducerImpl)的start方法启动defaultMQProducerImpl</li>
+<li>如果开启消息追踪则启动traceDispatcher，消息追踪通过SendMessageHook来获取消息发送事件，然后处理</li>
+</ol>
+<h3 id="DefaultMQProducerImpl-start"><a href="#DefaultMQProducerImpl-start" class="headerlink" title="DefaultMQProducerImpl start"></a>DefaultMQProducerImpl start</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">DefaultMQProducerImpl.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">(<span class="keyword">final</span> <span class="keyword">boolean</span> startFactory)</span> <span class="keyword">throws</span> MQClientException </span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (<span class="keyword">this</span>.serviceState) &#123;</span><br><span class="line">        <span class="keyword">case</span> CREATE_JUST:</span><br><span class="line">            <span class="comment">//起始状态就是JUST状态</span></span><br><span class="line">            <span class="keyword">this</span>.serviceState = ServiceState.START_FAILED;</span><br><span class="line">            <span class="comment">//检测配置，起始就是对ProducerGroup进行检测</span></span><br><span class="line">            <span class="comment">//ProducerGroup不能设置为null且不能设置为DEFAULT_PRODUCER_GROUP(DEFAULT_PRODUCER)</span></span><br><span class="line">            <span class="keyword">this</span>.checkConfig();</span><br><span class="line"></span><br><span class="line">            <span class="comment">//如果ProducerGroup不是CLIENT_INNER_PRODUCER_GROUP(CLIENT_INNER_PRODUCER)，则将其InstanceName设置成PID</span></span><br><span class="line">            <span class="keyword">if</span> (!<span class="keyword">this</span>.defaultMQProducer.getProducerGroup().equals(MixAll.CLIENT_INNER_PRODUCER_GROUP)) &#123;</span><br><span class="line">                <span class="keyword">this</span>.defaultMQProducer.changeInstanceNameToPID();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//获取MQClientInstance</span></span><br><span class="line">            <span class="keyword">this</span>.mQClientFactory = MQClientManager.getInstance().getOrCreateMQClientInstance(<span class="keyword">this</span>.defaultMQProducer, rpcHook);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//注册Producer</span></span><br><span class="line">            <span class="comment">//其实就是将这个对象加入到MQClientInstance的producerTable中，其他地方会在何时时间遍历这个Map获取数据，做其他操作，比如心跳等等</span></span><br><span class="line">            <span class="keyword">boolean</span> registerOK = mQClientFactory.registerProducer(<span class="keyword">this</span>.defaultMQProducer.getProducerGroup(), <span class="keyword">this</span>);</span><br><span class="line">            <span class="keyword">if</span> (!registerOK) &#123;</span><br><span class="line">                <span class="keyword">this</span>.serviceState = ServiceState.CREATE_JUST;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> MQClientException(<span class="string">&quot;The producer group[&quot;</span> + <span class="keyword">this</span>.defaultMQProducer.getProducerGroup()</span><br><span class="line">                    + <span class="string">&quot;] has been created before, specify another name please.&quot;</span> + FAQUrl.suggestTodo(FAQUrl.GROUP_NAME_DUPLICATE_URL),</span><br><span class="line">                    <span class="keyword">null</span>);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">//将这个Producer的CreateTopic以及一个空路由信息保存到topicPublishInfoTable Map中</span></span><br><span class="line">            <span class="comment">//topicPublishInfoTable: String TopicName &lt;-&gt; TopicPublishInfo Topic发布信息(路由信息)</span></span><br><span class="line">            <span class="keyword">this</span>.topicPublishInfoTable.put(<span class="keyword">this</span>.defaultMQProducer.getCreateTopicKey(), <span class="keyword">new</span> TopicPublishInfo());</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (startFactory) &#123;</span><br><span class="line">                <span class="comment">//启动该Producer对应的这个MQClientInstance</span></span><br><span class="line">                mQClientFactory.start();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            log.info(<span class="string">&quot;the producer [&#123;&#125;] start OK. sendMessageWithVIPChannel=&#123;&#125;&quot;</span>, <span class="keyword">this</span>.defaultMQProducer.getProducerGroup(),</span><br><span class="line">                <span class="keyword">this</span>.defaultMQProducer.isSendMessageWithVIPChannel());</span><br><span class="line">            <span class="keyword">this</span>.serviceState = ServiceState.RUNNING;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> RUNNING:</span><br><span class="line">        <span class="keyword">case</span> START_FAILED:</span><br><span class="line">        <span class="keyword">case</span> SHUTDOWN_ALREADY:</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> MQClientException(<span class="string">&quot;The producer service state not OK, maybe started once, &quot;</span></span><br><span class="line">                + <span class="keyword">this</span>.serviceState</span><br><span class="line">                + FAQUrl.suggestTodo(FAQUrl.CLIENT_SERVICE_NOT_OK),</span><br><span class="line">                <span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//向所有Broker发送心跳消息</span></span><br><span class="line">    <span class="keyword">this</span>.mQClientFactory.sendHeartbeatToAllBrokerWithLock();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//定时扫描过期的request并清除、回调</span></span><br><span class="line">    <span class="keyword">this</span>.timer.scheduleAtFixedRate(<span class="keyword">new</span> TimerTask() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                RequestFutureTable.scanExpiredRequest();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable e) &#123;</span><br><span class="line">                log.error(<span class="string">&quot;scan RequestFutureTable exception&quot;</span>, e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, <span class="number">1000</span> * <span class="number">3</span>, <span class="number">1000</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结:</p>
+<ol>
+<li>对ProducerGroup以及InstanceName进行设置</li>
+<li>获取或构建MQClientInstance</li>
+<li>将该对象(DefaultMQProducerImpl)加入到MQClientInstance的producerTable</li>
+<li>启动MQClientInstance</li>
+<li>向Broker发送心跳</li>
+<li>启动定时器定时清除过期Request并回调</li>
+</ol>
+<h3 id="MQClientInstance-start"><a href="#MQClientInstance-start" class="headerlink" title="MQClientInstance start"></a>MQClientInstance start</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">MQClientInstance.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> <span class="keyword">throws</span> MQClientException </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">synchronized</span> (<span class="keyword">this</span>) &#123;</span><br><span class="line">            <span class="keyword">switch</span> (<span class="keyword">this</span>.serviceState) &#123;</span><br><span class="line">                <span class="keyword">case</span> CREATE_JUST:</span><br><span class="line">                    <span class="keyword">this</span>.serviceState = ServiceState.START_FAILED;</span><br><span class="line">                    <span class="comment">// 如果name srv地址没有指定 则尝试从系统变量中设置的http服务获取name srv</span></span><br><span class="line">                    <span class="comment">// If not specified,looking address from name server</span></span><br><span class="line">                    <span class="keyword">if</span> (<span class="keyword">null</span> == <span class="keyword">this</span>.clientConfig.getNamesrvAddr()) &#123;</span><br><span class="line">                        <span class="keyword">this</span>.mQClientAPIImpl.fetchNameServerAddr();</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">//启动netty服务</span></span><br><span class="line">                    <span class="comment">// Start request-response channel</span></span><br><span class="line">                    <span class="keyword">this</span>.mQClientAPIImpl.start();</span><br><span class="line">                    <span class="comment">//启动各种定时任务 </span></span><br><span class="line">                    <span class="comment">//1. 定时fetchNameServerAddr:定时从http服务器获取name srv地址 间隔2分钟</span></span><br><span class="line">                    <span class="comment">//2. 定时从name srv更新topic路由信息 默认间隔30秒</span></span><br><span class="line">                    <span class="comment">//3. 定时清除下线的Broker,定时向Broker发送心跳 默认间隔30秒</span></span><br><span class="line">                    <span class="comment">//4. 定时persistAllConsumerOffset：定时持久化Consumer的消费偏移量 默认间隔5秒</span></span><br><span class="line">                    <span class="comment">//5. MQClientInstance定时调整线程池 默认间隔1分钟</span></span><br><span class="line">                    <span class="comment">// Start various schedule tasks</span></span><br><span class="line">                    <span class="keyword">this</span>.startScheduledTask();</span><br><span class="line">                    <span class="comment">//启动pullMessageService 该服务用于client从broker拉取消息</span></span><br><span class="line">                    <span class="comment">// Start pull service</span></span><br><span class="line">                    <span class="keyword">this</span>.pullMessageService.start();</span><br><span class="line">                    <span class="comment">//启动rebalanceService 该服务用于client处理负载均衡</span></span><br><span class="line">                    <span class="comment">// Start rebalance service</span></span><br><span class="line">                    <span class="keyword">this</span>.rebalanceService.start();</span><br><span class="line">                    <span class="comment">//启动另一个defaultMQProducer 暂时猜测是用于推送其他系统消息所使用</span></span><br><span class="line">                    <span class="comment">// Start push service</span></span><br><span class="line">                    <span class="keyword">this</span>.defaultMQProducer.getDefaultMQProducerImpl().start(<span class="keyword">false</span>);</span><br><span class="line">                    log.info(<span class="string">&quot;the client factory [&#123;&#125;] start OK&quot;</span>, <span class="keyword">this</span>.clientId);</span><br><span class="line">                    <span class="keyword">this</span>.serviceState = ServiceState.RUNNING;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                <span class="keyword">case</span> START_FAILED:</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> MQClientException(<span class="string">&quot;The Factory object[&quot;</span> + <span class="keyword">this</span>.getClientId() + <span class="string">&quot;] has been created before, and failed.&quot;</span>, <span class="keyword">null</span>);</span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>总结：</p>
+<ol>
+<li>如果没有指定name srv则尝试从某个http服务(配置中心)获取name srv</li>
+<li>启动netty服务</li>
+<li>启动各种定时任务<ol>
+<li><strong>定时fetchNameServerAddr:定时从http服务器获取name srv地址 间隔2分钟</strong></li>
+<li><strong>定时从name srv更新topic路由信息 默认间隔30秒</strong></li>
+<li><strong>定时清除下线的Broker,定时向Broker发送心跳 默认间隔30秒</strong></li>
+<li><strong>定时persistAllConsumerOffset：定时持久化Consumer的消费偏移量 默认间隔5秒</strong></li>
+<li><strong>MQClientInstance定时调整线程池 默认间隔1分钟</strong></li>
+</ol>
+</li>
+<li>启动pullMessageService 启动rebalanceService 启动另一个defaultMQProducer这都与consumer相关</li>
+</ol>
+<p><strong>重点</strong>：</p>
+<p>定时persistAllConsumerOffset：定时持久化Consumer的消费偏移量 默认间隔5秒，这个默认5秒持久化consumer的消费偏移量，如果broker宕机，极有可能造成消息的重复消费，所以consumer一定要做好幂等</p>
+<h2 id="Producer-send-msg"><a href="#Producer-send-msg" class="headerlink" title="Producer send msg"></a>Producer send msg</h2><pre class="mermaid">sequenceDiagram
+Message -> Message: create Message
+Message -> DefaultMQProducer: defaultMQProducer.send(msg)
+DefaultMQProducer -> DefaultMQProducer: change msg topic with Namespace
+DefaultMQProducer -> DefaultMQProducerImpl: defaultMQProducerImpl.send(msg)
+DefaultMQProducerImpl -> DefaultMQProducerImpl: 1.tryToFindTopicPublishInfo
+DefaultMQProducerImpl -> DefaultMQProducerImpl: 2.selectOneMessageQueue
+DefaultMQProducerImpl -> DefaultMQProducerImpl: 3.sendKernelImpl</pre>
+
+<p>重点关注两点：</p>
+<ol>
+<li>tryToFindTopicPublishInfo：topic路由寻址</li>
+<li>selectOneMessageQueue：负载均衡</li>
+</ol>
+<h3 id="1-tryToFindTopicPublishInfo：topic路由寻址"><a href="#1-tryToFindTopicPublishInfo：topic路由寻址" class="headerlink" title="1. tryToFindTopicPublishInfo：topic路由寻址"></a>1. tryToFindTopicPublishInfo：topic路由寻址</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">DefaultMQProducerImpl.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">private</span> TopicPublishInfo <span class="title">tryToFindTopicPublishInfo</span><span class="params">(<span class="keyword">final</span> String topic)</span> </span>&#123;</span><br><span class="line">    TopicPublishInfo topicPublishInfo = <span class="keyword">this</span>.topicPublishInfoTable.get(topic);</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">null</span> == topicPublishInfo || !topicPublishInfo.ok()) &#123;</span><br><span class="line">        <span class="keyword">this</span>.topicPublishInfoTable.putIfAbsent(topic, <span class="keyword">new</span> TopicPublishInfo());</span><br><span class="line">        <span class="keyword">this</span>.mQClientFactory.updateTopicRouteInfoFromNameServer(topic);</span><br><span class="line">        topicPublishInfo = <span class="keyword">this</span>.topicPublishInfoTable.get(topic);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (topicPublishInfo.isHaveTopicRouterInfo() || topicPublishInfo.ok()) &#123;</span><br><span class="line">        <span class="keyword">return</span> topicPublishInfo;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">this</span>.mQClientFactory.updateTopicRouteInfoFromNameServer(topic, <span class="keyword">true</span>, <span class="keyword">this</span>.defaultMQProducer);</span><br><span class="line">        topicPublishInfo = <span class="keyword">this</span>.topicPublishInfoTable.get(topic);</span><br><span class="line">        <span class="keyword">return</span> topicPublishInfo;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>说明：</p>
+<ol>
+<li>从topicPublishInfoTable Map中获取路由信息</li>
+<li>如果路由信息在Map中不存在则调用updateTopicRouteInfoFromNameServer向NameSrv请求Topic路由信息并更新topicPublishInfoTable </li>
+</ol>
+<h3 id="2-selectOneMessageQueue：负载均衡"><a href="#2-selectOneMessageQueue：负载均衡" class="headerlink" title="2. selectOneMessageQueue：负载均衡"></a>2. selectOneMessageQueue：负载均衡</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">MQFaultStrategy.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">public</span> MessageQueue <span class="title">selectOneMessageQueue</span><span class="params">(<span class="keyword">final</span> TopicPublishInfo tpInfo, <span class="keyword">final</span> String lastBrokerName)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.sendLatencyFaultEnable) &#123;</span><br><span class="line">        <span class="comment">//开启了延时容错</span></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//首先获取上次使用的Queue index+1</span></span><br><span class="line">            <span class="keyword">int</span> index = tpInfo.getSendWhichQueue().getAndIncrement();</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; tpInfo.getMessageQueueList().size(); i++) &#123;</span><br><span class="line">                <span class="keyword">int</span> pos = Math.abs(index++) % tpInfo.getMessageQueueList().size();</span><br><span class="line">                <span class="keyword">if</span> (pos &lt; <span class="number">0</span>)</span><br><span class="line">                    pos = <span class="number">0</span>;</span><br><span class="line">                <span class="comment">//找到index对应的queue</span></span><br><span class="line">                MessageQueue mq = tpInfo.getMessageQueueList().get(pos);</span><br><span class="line">                <span class="keyword">if</span> (latencyFaultTolerance.isAvailable(mq.getBrokerName())) &#123;</span><br><span class="line">                    <span class="comment">//如果queue对应的broker可用，则使用该broker</span></span><br><span class="line">                    <span class="keyword">if</span> (<span class="keyword">null</span> == lastBrokerName || mq.getBrokerName().equals(lastBrokerName))</span><br><span class="line">                        <span class="keyword">return</span> mq;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">		   <span class="comment">//如果上一步没找个合适的broker，则从所有的broker中选择一个相对合适的，并且broker是可写的</span></span><br><span class="line">            <span class="keyword">final</span> String notBestBroker = latencyFaultTolerance.pickOneAtLeast();</span><br><span class="line">            <span class="keyword">int</span> writeQueueNums = tpInfo.getQueueIdByBroker(notBestBroker);</span><br><span class="line">            <span class="keyword">if</span> (writeQueueNums &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">final</span> MessageQueue mq = tpInfo.selectOneMessageQueue();</span><br><span class="line">                <span class="keyword">if</span> (notBestBroker != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    mq.setBrokerName(notBestBroker);</span><br><span class="line">                    mq.setQueueId(tpInfo.getSendWhichQueue().getAndIncrement() % writeQueueNums);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">return</span> mq;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                latencyFaultTolerance.remove(notBestBroker);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;Error occurred when selecting message queue&quot;</span>, e);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> tpInfo.selectOneMessageQueue();</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//未开启延时容错，直接按顺序选下一个</span></span><br><span class="line">    <span class="keyword">return</span> tpInfo.selectOneMessageQueue(lastBrokerName);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="同步"><a href="#同步" class="headerlink" title="同步"></a>同步</h3><h3 id="异步"><a href="#异步" class="headerlink" title="异步"></a>异步</h3>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>ChenYun</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://blog.yuner.fun/2020/10/15/RocketMQ%20Producer/">http://blog.yuner.fun/2020/10/15/RocketMQ%20Producer/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/10/15/RocketMQ%20Broker/">RocketMQ Broker</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© ChenYun | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
+    }
+  </script>
+</footer>
+
+    </div>
+</body>
+</html>
