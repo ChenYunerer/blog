@@ -267,6 +267,7 @@ DefaultMQProducerImpl -> DefaultMQProducerImpl: 3.sendKernelImpl</pre>
 <li>处理Hook</li>
 <li>封装SendMessageRequestHeader由MQClientAPIImpl构建RemotingCommand通过netty发送请求</li>
 </ol>
+<h2 id="异步消息"><a href="#异步消息" class="headerlink" title="异步消息"></a>异步消息</h2><p>和以上同步的类似，只不过异步消息会将消息存在Map容器中，由后台线程定时获取部分消息批量发送到Broker，发送过程和同步一致</p>
 
         </div>
 
