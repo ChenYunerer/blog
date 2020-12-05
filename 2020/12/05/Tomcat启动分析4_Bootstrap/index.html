@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="陈允">
+
+
+
+
+
+<title>Tomcat启动分析4_Bootstrap | 陈允的学习笔记</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.1.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">陈允的学习笔记</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">陈允的学习笔记</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Tomcat启动分析4_Bootstrap</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">陈允</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 5, 2020&nbsp;&nbsp;11:22:06</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Tomcat/">Tomcat</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Tomcat启动分析4-Bootstrap解析"><a href="#Tomcat启动分析4-Bootstrap解析" class="headerlink" title="Tomcat启动分析4_Bootstrap解析"></a>Tomcat启动分析4_Bootstrap解析</h2><p>通过catalina.sh脚本可知，所有的启动、停止命令最终都是加载执行Bootstrap并传入对应start或是stop等参数，具体的处理由Bootstrap来处理。</p>
+<h4 id="Bootstrap静态初始化块"><a href="#Bootstrap静态初始化块" class="headerlink" title="Bootstrap静态初始化块"></a>Bootstrap静态初始化块</h4><p>主要对catalina.home以及catalina.base系统变量进行赋值</p>
+<h4 id="Bootstrap-main"><a href="#Bootstrap-main" class="headerlink" title="Bootstrap main"></a>Bootstrap main</h4><ol>
+<li>构建Bootstrap对象，并调用init方法进行初始化<ol>
+<li>Bootstrap.init主要就是初始化ClassLoader，</li>
+<li>实例化Catalina对象，反射调用其setParentClassLoader方法，将ClassLoader传递过去</li>
+</ol>
+</li>
+<li>通过入参args判读操作类型：start（参数为空则默认为start）、startd、stopd、configtest，这里暂时只关注start<ol>
+<li>daemon.load() : 反射调用Catalina对象的load方法并传递参数</li>
+<li>daemon.stat() : 反射调用Catalina对象的start方法</li>
+</ol>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">Bootstrap.class</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String args[])</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (daemon == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// Don&#x27;t set daemon until init() has completed</span></span><br><span class="line">          <span class="comment">//构建Bootstrap对象</span></span><br><span class="line">            Bootstrap bootstrap = <span class="keyword">new</span> Bootstrap();</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">              <span class="comment">//初始化：初始化ClassLoader并构建Catalina对象，反射调用其方法，传递ClassLoader对象</span></span><br><span class="line">                bootstrap.init();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">                handleThrowable(t);</span><br><span class="line">                t.printStackTrace();</span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            daemon = bootstrap;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// When running as a service the call to stop will be on a new</span></span><br><span class="line">            <span class="comment">// thread so make sure the correct class loader is used to prevent</span></span><br><span class="line">            <span class="comment">// a range of class not found exceptions.</span></span><br><span class="line">            Thread.currentThread().setContextClassLoader(daemon.catalinaLoader);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">          <span class="comment">//具体处理不同命令，args为空默认为start</span></span><br><span class="line">          <span class="comment">//load和start等方法实际都是对于Catalina对象对应方法的反射调用，具体逻辑由Catalina来处理</span></span><br><span class="line">            String command = <span class="string">&quot;start&quot;</span>;</span><br><span class="line">            <span class="keyword">if</span> (args.length &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                command = args[args.length - <span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (command.equals(<span class="string">&quot;startd&quot;</span>)) &#123;</span><br><span class="line">                args[args.length - <span class="number">1</span>] = <span class="string">&quot;start&quot;</span>;</span><br><span class="line">                daemon.load(args);</span><br><span class="line">                daemon.start();</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (command.equals(<span class="string">&quot;stopd&quot;</span>)) &#123;</span><br><span class="line">                args[args.length - <span class="number">1</span>] = <span class="string">&quot;stop&quot;</span>;</span><br><span class="line">                daemon.stop();</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (command.equals(<span class="string">&quot;start&quot;</span>)) &#123;</span><br><span class="line">                daemon.setAwait(<span class="keyword">true</span>);</span><br><span class="line">                daemon.load(args);</span><br><span class="line">                daemon.start();</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (command.equals(<span class="string">&quot;stop&quot;</span>)) &#123;</span><br><span class="line">                daemon.stopServer(args);</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (command.equals(<span class="string">&quot;configtest&quot;</span>)) &#123;</span><br><span class="line">                daemon.load(args);</span><br><span class="line">                <span class="keyword">if</span> (<span class="keyword">null</span>==daemon.getServer()) &#123;</span><br><span class="line">                    System.exit(<span class="number">1</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                System.exit(<span class="number">0</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                log.warn(<span class="string">&quot;Bootstrap: command \&quot;&quot;</span> + command + <span class="string">&quot;\&quot; does not exist.&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            <span class="comment">// Unwrap the Exception for clearer error reporting</span></span><br><span class="line">            <span class="keyword">if</span> (t <span class="keyword">instanceof</span> InvocationTargetException &amp;&amp;</span><br><span class="line">                    t.getCause() != <span class="keyword">null</span>) &#123;</span><br><span class="line">                t = t.getCause();</span><br><span class="line">            &#125;</span><br><span class="line">            handleThrowable(t);</span><br><span class="line">            t.printStackTrace();</span><br><span class="line">            System.exit(<span class="number">1</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Catalina-load"><a href="#Catalina-load" class="headerlink" title="Catalina load"></a>Catalina load</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Catalina.class</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">load</span><span class="params">(String args[])</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (arguments(args)) &#123;</span><br><span class="line">            load();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        e.printStackTrace(System.out);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>arguments方法:对入参args进行解析，设置对应的参数</li>
+<li>load方法:<ol>
+<li>initDirs：判断java.io.tmpdir路径是否存在</li>
+<li>initNaming：不知道这个Naming有啥用</li>
+<li>构建Digester，获取server.xml文件，通过Digester对server.xml进行具体解析，其中获取server.xml使用了2种方式：FileInputStream方式，getClass().getClassLoader().getResourceAsStream。如果server.xml不存在，则说明tomcat可能是嵌入式tomcat，则转而获取server-embed.xml</li>
+</ol>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">Catalina.class</span><br><span class="line"><span class="function"><span class="keyword">protected</span> Digester <span class="title">createStartDigester</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">long</span> t1=System.currentTimeMillis();</span><br><span class="line">    <span class="comment">// Initialize the digester</span></span><br><span class="line">    Digester digester = <span class="keyword">new</span> Digester();</span><br><span class="line">    digester.setValidating(<span class="keyword">false</span>);</span><br><span class="line">    digester.setRulesValidation(<span class="keyword">true</span>);</span><br><span class="line">    HashMap&lt;Class&lt;?&gt;, List&lt;String&gt;&gt; fakeAttributes = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    ArrayList&lt;String&gt; attrs = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">    attrs.add(<span class="string">&quot;className&quot;</span>);</span><br><span class="line">    fakeAttributes.put(Object.class, attrs);</span><br><span class="line">    digester.setFakeAttributes(fakeAttributes);</span><br><span class="line">    digester.setUseContextClassLoader(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Configure the actions we will be using</span></span><br><span class="line">  <span class="comment">//遇到Server标签则创建org.apache.catalina.core.StandardServer，如果Server标签存在属性className，则用该属性值替换org.apache.catalina.core.StandardServer，创建完成之后进行压栈</span></span><br><span class="line">    digester.addObjectCreate(<span class="string">&quot;Server&quot;</span>,</span><br><span class="line">                             <span class="string">&quot;org.apache.catalina.core.StandardServer&quot;</span>,</span><br><span class="line">                             <span class="string">&quot;className&quot;</span>);</span><br><span class="line">  <span class="comment">//遇到Server标签则对栈头部元素进行属性赋值</span></span><br><span class="line">    digester.addSetProperties(<span class="string">&quot;Server&quot;</span>);</span><br><span class="line">  <span class="comment">//遇到Server标签则对栈头部的前一个元素使用setServer(org.apache.catalina.Server)方法传递自己</span></span><br><span class="line">  <span class="comment">//在解析前通过digester.push(this)传入了Catalina对象，所以在解析一开始的栈头部元素就是Catalina对象</span></span><br><span class="line">  <span class="comment">//所以在解析完成之后，Catalina就获取了server引用</span></span><br><span class="line">    digester.addSetNext(<span class="string">&quot;Server&quot;</span>,</span><br><span class="line">                        <span class="string">&quot;setServer&quot;</span>,</span><br><span class="line">                        <span class="string">&quot;org.apache.catalina.Server&quot;</span>);</span><br><span class="line"></span><br><span class="line">    digester.addObjectCreate(<span class="string">&quot;Server/GlobalNamingResources&quot;</span>,</span><br><span class="line">                             <span class="string">&quot;org.apache.catalina.deploy.NamingResourcesImpl&quot;</span>);</span><br><span class="line">    digester.addSetProperties(<span class="string">&quot;Server/GlobalNamingResources&quot;</span>);</span><br><span class="line">    digester.addSetNext(<span class="string">&quot;Server/GlobalNamingResources&quot;</span>,</span><br><span class="line">                        <span class="string">&quot;setGlobalNamingResources&quot;</span>,</span><br><span class="line">                        <span class="string">&quot;org.apache.catalina.deploy.NamingResourcesImpl&quot;</span>);</span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Digester解析完成后，Catalina获取到server引用，再对server</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Catalina.class</span><br><span class="line"><span class="comment">//为server设置catalina引用,配置CatalinaHome CatalinaBase</span></span><br><span class="line">getServer().setCatalina(<span class="keyword">this</span>);</span><br><span class="line">getServer().setCatalinaHome(Bootstrap.getCatalinaHomeFile());</span><br><span class="line">getServer().setCatalinaBase(Bootstrap.getCatalinaBaseFile());</span><br><span class="line"></span><br><span class="line"><span class="comment">// Stream redirection</span></span><br><span class="line"><span class="comment">//设置System.out System.err</span></span><br><span class="line">initStreams();</span><br><span class="line"></span><br><span class="line"><span class="comment">// Start the new server</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  <span class="comment">//初始化Server 初始化流程见下图</span></span><br><span class="line">    getServer().init();</span><br><span class="line">&#125; <span class="keyword">catch</span> (LifecycleException e) &#123;</span><br><span class="line">    <span class="keyword">if</span> (Boolean.getBoolean(<span class="string">&quot;org.apache.catalina.startup.EXIT_ON_INIT_FAILURE&quot;</span>)) &#123;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> java.lang.Error(e);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        log.error(<span class="string">&quot;Catalina.start&quot;</span>, e);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">title:初始化流程</span><br><span class="line">Server -&gt; Service: init Service</span><br><span class="line">Service -&gt; Engine: init Engine</span><br><span class="line">Service -&gt; Executor: init Executor</span><br><span class="line">Service -&gt; Connector: init Connector</span><br><span class="line">Connector -&gt; ProtocolHandler: init ProtocolHandler</span><br><span class="line">ProtocolHandler -&gt; EndPoint: init EndPoint</span><br></pre></td></tr></table></figure>
+
+<h4 id="Catalina-start"><a href="#Catalina-start" class="headerlink" title="Catalina start"></a>Catalina start</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">Catalina.class</span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Start a new server instance.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">start</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">//获取Server对象判断是否为null，如果为null再次进行初始化</span></span><br><span class="line">    <span class="keyword">if</span> (getServer() == <span class="keyword">null</span>) &#123;</span><br><span class="line">        load();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (getServer() == <span class="keyword">null</span>) &#123;</span><br><span class="line">        log.fatal(<span class="string">&quot;Cannot start server. Server instance is not configured.&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> t1 = System.nanoTime();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Start the new server</span></span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="comment">//调用Server start方法开始start各个组件流程 start流程见下图</span></span><br><span class="line">        getServer().start();</span><br><span class="line">    &#125; <span class="keyword">catch</span> (LifecycleException e) &#123;</span><br><span class="line">        log.fatal(sm.getString(<span class="string">&quot;catalina.serverStartFail&quot;</span>), e);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            getServer().destroy();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (LifecycleException e1) &#123;</span><br><span class="line">            log.debug(<span class="string">&quot;destroy() failed for failed Server &quot;</span>, e1);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">long</span> t2 = System.nanoTime();</span><br><span class="line">    <span class="keyword">if</span>(log.isInfoEnabled()) &#123;</span><br><span class="line">        log.info(<span class="string">&quot;Server startup in &quot;</span> + ((t2 - t1) / <span class="number">1000000</span>) + <span class="string">&quot; ms&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Register shutdown hook</span></span><br><span class="line">    <span class="keyword">if</span> (useShutdownHook) &#123;</span><br><span class="line">        <span class="keyword">if</span> (shutdownHook == <span class="keyword">null</span>) &#123;</span><br><span class="line">            shutdownHook = <span class="keyword">new</span> CatalinaShutdownHook();</span><br><span class="line">        &#125;</span><br><span class="line">        Runtime.getRuntime().addShutdownHook(shutdownHook);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// If JULI is being used, disable JULI&#x27;s shutdown hook since</span></span><br><span class="line">        <span class="comment">// shutdown hooks run in parallel and log messages may be lost</span></span><br><span class="line">        <span class="comment">// if JULI&#x27;s hook completes before the CatalinaShutdownHook()</span></span><br><span class="line">        LogManager logManager = LogManager.getLogManager();</span><br><span class="line">        <span class="keyword">if</span> (logManager <span class="keyword">instanceof</span> ClassLoaderLogManager) &#123;</span><br><span class="line">            ((ClassLoaderLogManager) logManager).setUseShutdownHook(</span><br><span class="line">                    <span class="keyword">false</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (await) &#123;</span><br><span class="line">        await();</span><br><span class="line">        stop();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">title: start流程</span><br><span class="line">Server -&gt; GlobalNamingResources: globalNamingResources.start();</span><br><span class="line">Server -&gt; Service :services[i].start();</span><br><span class="line">Service -&gt; Engine : engine.start();</span><br><span class="line">Service -&gt; Executor : executor.start();</span><br><span class="line">Executor -&gt; Executor: 构建ThreadPoolExecutor</span><br><span class="line">Service -&gt; MapperListener :  mapperListener.start();</span><br><span class="line">Service -&gt; Connector : connector.start();</span><br><span class="line">Connector -&gt; ProtocolHandler : protocolHandler.start();</span><br><span class="line">ProtocolHandler -&gt; EndPoint : endpoint.start();</span><br></pre></td></tr></table></figure>
+
+<h4 id="Tomcat对于请求的处理"><a href="#Tomcat对于请求的处理" class="headerlink" title="Tomcat对于请求的处理"></a>Tomcat对于请求的处理</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">title: Endpoint</span><br><span class="line">Endpoint -&gt; Endpoint: initializeConnectionLatch</span><br><span class="line">Endpoint -&gt; Poller: start Pollers</span><br><span class="line">Poller -&gt; Poller: run(): 循环获取同步队列中的PollerEvent,并注册NIO事件，对事件进行select</span><br><span class="line"></span><br><span class="line">Endpoint -&gt; Acceptor: start Acceptors</span><br><span class="line">Acceptor -&gt; Acceptor: run(): 循环监听socket accept请求</span><br><span class="line">Acceptor --&gt; Poller: 接收到请求将请求封装成PollerEvent加入Poller中的Event同步队列</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">title: Poller</span><br><span class="line">Poller -&gt; SocketProcessor:Poller\n监听到OP_READ OP_WRITE 事件后\n交由SocketProcessor处理</span><br><span class="line">SocketProcessor -&gt; ConnectionHandler: SocketProcessor\n将对象再次交给\nConnectionHandler</span><br><span class="line">ConnectionHandler -&gt; ProtocolHandler:ConnectionHandler\n构建Processor</span><br><span class="line">ProtocolHandler -&gt; Processor: create Processor</span><br><span class="line">Processor -&gt; Processor: process()\nservice()</span><br><span class="line">Processor -&gt; Adapter: getAdapter()\n.service(request, response)</span><br><span class="line">Adapter -&gt; Adapter: 构建\nrequest\nresponse</span><br><span class="line">Adapter -&gt; Pipeline: </span><br><span class="line">Pipeline -&gt; Pipeline: invode Valve</span><br><span class="line">Pipeline -&gt; Pipeline: invode Valve</span><br><span class="line">Pipeline -&gt; Pipeline: invode Valve \n ....</span><br><span class="line">Pipeline -&gt; Pipeline: invode StandardWrapperValve \n ....</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">title: StandardWrapperValve invoke</span><br><span class="line">StandardWrapperValve -&gt; StandardWrapperValve: servlet &#x3D; wrapper.allocate(); \n 构建servlet实例</span><br><span class="line">StandardWrapperValve -&gt; StandardWrapperValve: ApplicationFilterFactory\n.createFilterChain(request, wrapper, servlet);</span><br><span class="line">StandardWrapperValve -&gt; ApplicationFilterChain:filterChain.doFilter(xxx);</span><br><span class="line">ApplicationFilterChain -&gt; Servlet: servlet.service(request, response);</span><br><span class="line">Servlet -&gt; Servlet: dispathServlet()</span><br></pre></td></tr></table></figure>
+
+<p> Endpoint startInternal:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">NioEndpoint.class</span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">startInternal</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!running) &#123;</span><br><span class="line">        running = <span class="keyword">true</span>;</span><br><span class="line">        paused = <span class="keyword">false</span>;</span><br><span class="line"></span><br><span class="line">        processorCache = <span class="keyword">new</span> SynchronizedStack&lt;&gt;(SynchronizedStack.DEFAULT_SIZE,</span><br><span class="line">                socketProperties.getProcessorCache());</span><br><span class="line">        eventCache = <span class="keyword">new</span> SynchronizedStack&lt;&gt;(SynchronizedStack.DEFAULT_SIZE,</span><br><span class="line">                        socketProperties.getEventCache());</span><br><span class="line">        nioChannels = <span class="keyword">new</span> SynchronizedStack&lt;&gt;(SynchronizedStack.DEFAULT_SIZE,</span><br><span class="line">                socketProperties.getBufferPool());</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Create worker collection</span></span><br><span class="line">        <span class="keyword">if</span> ( getExecutor() == <span class="keyword">null</span> ) &#123;</span><br><span class="line">            createExecutor();</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="comment">//初始化连接Latch 用于限制连接数量 默认1000</span></span><br><span class="line">        initializeConnectionLatch();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Start poller threads</span></span><br><span class="line">      <span class="comment">//启动多个Poller</span></span><br><span class="line">        pollers = <span class="keyword">new</span> Poller[getPollerThreadCount()];</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="number">0</span>; i&lt;pollers.length; i++) &#123;</span><br><span class="line">            pollers[i] = <span class="keyword">new</span> Poller();</span><br><span class="line">            Thread pollerThread = <span class="keyword">new</span> Thread(pollers[i], getName() + <span class="string">&quot;-ClientPoller-&quot;</span>+i);</span><br><span class="line">            pollerThread.setPriority(threadPriority);</span><br><span class="line">            pollerThread.setDaemon(<span class="keyword">true</span>);</span><br><span class="line">            pollerThread.start();</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="comment">//开启Acceptor线程用于监听请求连接</span></span><br><span class="line">        startAcceptorThreads();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">AbstractEndpoint.class</span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">startAcceptorThreads</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> count = getAcceptorThreadCount();</span><br><span class="line">        acceptors = <span class="keyword">new</span> Acceptor[count];</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; count; i++) &#123;</span><br><span class="line">            acceptors[i] = createAcceptor();</span><br><span class="line">            String threadName = getName() + <span class="string">&quot;-Acceptor-&quot;</span> + i;</span><br><span class="line">            acceptors[i].setThreadName(threadName);</span><br><span class="line">          <span class="comment">//启动Acceptor线程</span></span><br><span class="line">            Thread t = <span class="keyword">new</span> Thread(acceptors[i], threadName);</span><br><span class="line">            t.setPriority(getAcceptorThreadPriority());</span><br><span class="line">            t.setDaemon(getDaemon());</span><br><span class="line">            t.start();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>Acceptor线程启动后，开启循环监听socket连接，在监听前会计算连接数量，如果超过连接数量则进行等待，获取到SocketChannel之后通过setSocketOptions将SocketChannel根据是否开启SSL进行封装构建SecureNioChannel、NioChannel，在将该Channel注册到Poller中</p>
+<p>注册过程中又将NioChannel进行包裹NioSocketWrapper进而构建PollerEvent，添加到Poller的同步队列（SynchronizedQueue<PollerEvent> events）当中去</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">register</span><span class="params">(<span class="keyword">final</span> NioChannel socket)</span> </span>&#123;</span><br><span class="line">    socket.setPoller(<span class="keyword">this</span>);</span><br><span class="line">    NioSocketWrapper ka = <span class="keyword">new</span> NioSocketWrapper(socket, NioEndpoint.<span class="keyword">this</span>);</span><br><span class="line">    socket.setSocketWrapper(ka);</span><br><span class="line">    ka.setPoller(<span class="keyword">this</span>);</span><br><span class="line">    ka.setReadTimeout(getSocketProperties().getSoTimeout());</span><br><span class="line">    ka.setWriteTimeout(getSocketProperties().getSoTimeout());</span><br><span class="line">    ka.setKeepAliveLeft(NioEndpoint.<span class="keyword">this</span>.getMaxKeepAliveRequests());</span><br><span class="line">    ka.setSecure(isSSLEnabled());</span><br><span class="line">    ka.setReadTimeout(getSoTimeout());</span><br><span class="line">    ka.setWriteTimeout(getSoTimeout());</span><br><span class="line">    PollerEvent r = eventCache.pop();</span><br><span class="line">    ka.interestOps(SelectionKey.OP_READ);<span class="comment">//this is what OP_REGISTER turns into.</span></span><br><span class="line">    <span class="keyword">if</span> ( r==<span class="keyword">null</span>) r = <span class="keyword">new</span> PollerEvent(socket,ka,OP_REGISTER);</span><br><span class="line">    <span class="keyword">else</span> r.reset(socket,ka,OP_REGISTER);</span><br><span class="line">    addEvent(r);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Poller线程启动后会循环从events队列中获取PollerEvent并调用其run方法，在该方法中进行事件注册SelectionKey.OP_READ事件，然后进行selector.selectedKeys()获取SelectionKey对SelectionKey进行逐一处理调用processKey对不同的Key进行处理：</p>
+<ol>
+<li>processSendfile() 处理文件</li>
+<li>processSocket(attachment, SocketEvent.OPEN_READ, true) 处理OP_READ</li>
+<li>processSocket(attachment, SocketEvent.OPEN_WRITE, true) 处理OP_WRITE</li>
+</ol>
+<p>具体的执行由SocketProcessor进行处理</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">AbstractEndpoint.SocketProcessor.class</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">processSocket</span><span class="params">(SocketWrapperBase&lt;S&gt; socketWrapper,</span></span></span><br><span class="line"><span class="function"><span class="params">        SocketEvent event, <span class="keyword">boolean</span> dispatch)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (socketWrapper == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="comment">//构建SocketProcessorBase 没有则进行创建</span></span><br><span class="line">        SocketProcessorBase&lt;S&gt; sc = processorCache.pop();</span><br><span class="line">        <span class="keyword">if</span> (sc == <span class="keyword">null</span>) &#123;</span><br><span class="line">            sc = createSocketProcessor(socketWrapper, event);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            sc.reset(socketWrapper, event);</span><br><span class="line">        &#125;</span><br><span class="line">      <span class="comment">//通过Executor进行执行</span></span><br><span class="line">        Executor executor = getExecutor();</span><br><span class="line">        <span class="keyword">if</span> (dispatch &amp;&amp; executor != <span class="keyword">null</span>) &#123;</span><br><span class="line">            executor.execute(sc);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            sc.run();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (RejectedExecutionException ree) &#123;</span><br><span class="line">        getLog().warn(sm.getString(<span class="string">&quot;endpoint.executor.fail&quot;</span>, socketWrapper) , ree);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        ExceptionUtils.handleThrowable(t);</span><br><span class="line">        <span class="comment">// This means we got an OOM or similar creating a thread, or that</span></span><br><span class="line">        <span class="comment">// the pool and its queue are full</span></span><br><span class="line">        getLog().error(sm.getString(<span class="string">&quot;endpoint.process.fail&quot;</span>), t);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>接下来代码量太多了，不贴代码了……</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>陈允</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://blog.yuner.fun/2020/12/05/Tomcat%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%904_Bootstrap/">http://blog.yuner.fun/2020/12/05/Tomcat%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%904_Bootstrap/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Tomcat/"># Tomcat</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/12/05/Arthas%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Arthas源码分析</a>
+            
+            
+            <a class="next" rel="next" href="/2020/12/05/Tomcat%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%903_setclasspath.sh/">Tomcat启动分析3_setclasspath.sh</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© 陈允 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
+    }
+  </script>
+</footer>
+
+    </div>
+</body>
+</html>

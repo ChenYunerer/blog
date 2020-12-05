@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="陈允">
+
+
+
+
+
+<title>Spring Cloud OpenFeign 3 | 陈允的学习笔记</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.1.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">陈允的学习笔记</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">陈允的学习笔记</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Spring Cloud OpenFeign 3</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">陈允</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 5, 2020&nbsp;&nbsp;11:27:26</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Spring-SpringCloud/">Spring&SpringCloud</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="Spring-Cloud-OpenFeign源码笔记3"><a href="#Spring-Cloud-OpenFeign源码笔记3" class="headerlink" title="Spring Cloud OpenFeign源码笔记3"></a>Spring Cloud OpenFeign源码笔记3</h2><h4 id="几种Client的实现"><a href="#几种Client的实现" class="headerlink" title="几种Client的实现"></a>几种Client的实现</h4><h5 id="feign-Default"><a href="#feign-Default" class="headerlink" title="feign.Default"></a>feign.Default</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">execute</span><span class="params">(Request request, Options options)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">  HttpURLConnection connection = convertAndSend(request, options);</span><br><span class="line">  <span class="keyword">return</span> convertResponse(connection, request);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看到关键类HttpURLConnection就不多BB了</p>
+<h5 id="org-springframework-cloud-openfeign-ribbon-LoadBalancerFeignClient"><a href="#org-springframework-cloud-openfeign-ribbon-LoadBalancerFeignClient" class="headerlink" title="org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient"></a>org.springframework.cloud.openfeign.ribbon.LoadBalancerFeignClient</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Response <span class="title">execute</span><span class="params">(Request request, Request.Options options)</span> <span class="keyword">throws</span> IOException </span>&#123;</span><br><span class="line">   <span class="keyword">try</span> &#123;</span><br><span class="line">      URI asUri = URI.create(request.url());</span><br><span class="line">      String clientName = asUri.getHost();</span><br><span class="line">      URI uriWithoutHost = cleanUrl(request.url(), clientName);</span><br><span class="line">      FeignLoadBalancer.RibbonRequest ribbonRequest = <span class="keyword">new</span> FeignLoadBalancer.RibbonRequest(</span><br><span class="line">            <span class="keyword">this</span>.delegate, request, uriWithoutHost);</span><br><span class="line"></span><br><span class="line">      IClientConfig requestConfig = getClientConfig(options, clientName);</span><br><span class="line">      <span class="keyword">return</span> lbClient(clientName).executeWithLoadBalancer(ribbonRequest,</span><br><span class="line">            requestConfig).toResponse();</span><br><span class="line">   &#125;</span><br><span class="line">   <span class="keyword">catch</span> (ClientException e) &#123;</span><br><span class="line">      IOException io = findIOException(e);</span><br><span class="line">      <span class="keyword">if</span> (io != <span class="keyword">null</span>) &#123;</span><br><span class="line">         <span class="keyword">throw</span> io;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(e);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>lbClient(clientName)通过服务名获取对应的FeignLoadBalancer，通过LoadBalancer发起请求</p>
+<p>FeignLoadBalancer继承于AbstractLoadBalancerAwareClient，由ribbon提供负载均衡能力</p>
+<h5 id="org-springframework-cloud-sleuth-instrument-web-client-feign-TracingFeignClient"><a href="#org-springframework-cloud-sleuth-instrument-web-client-feign-TracingFeignClient" class="headerlink" title="org.springframework.cloud.sleuth.instrument.web.client.feign.TracingFeignClient"></a>org.springframework.cloud.sleuth.instrument.web.client.feign.TracingFeignClient</h5><p>todo</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>陈允</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://blog.yuner.fun/2020/12/05/Spring%20Cloud%20OpenFeign%203/">http://blog.yuner.fun/2020/12/05/Spring%20Cloud%20OpenFeign%203/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Spring-SpringCloud/"># Spring&SpringCloud</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2020/12/05/Spring%20Cloud%20RefreshScope/">Spring Cloud RefreshScope</a>
+            
+            
+            <a class="next" rel="next" href="/2020/12/05/Spring%20Cloud%20OpenFeign%202/">Spring Cloud OpenFeign 2</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© 陈允 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
+    }
+  </script>
+</footer>
+
+    </div>
+</body>
+</html>
