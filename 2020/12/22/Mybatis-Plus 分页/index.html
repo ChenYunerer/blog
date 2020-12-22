@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="陈允">
+
+
+
+
+
+<title>Mybatis-Plus分页 | 陈允的学习笔记</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.1.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">陈允的学习笔记</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">陈允的学习笔记</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Mybatis-Plus分页</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">陈允</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 22, 2020&nbsp;&nbsp;22:39:59</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Spring-SpringCloud/">Spring&SpringCloud</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Mybatis-Plus分页"><a href="#Mybatis-Plus分页" class="headerlink" title="Mybatis-Plus分页"></a>Mybatis-Plus分页</h1><p>源码基于：mybatis-plus 3.4.1</p>
+<h2 id="PaginationInterceptor"><a href="#PaginationInterceptor" class="headerlink" title="PaginationInterceptor"></a>PaginationInterceptor</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Intercepts(&#123;@Signature(type = StatementHandler.class, method = &quot;prepare&quot;, args = &#123;Connection.class, Integer.class&#125;)&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">PaginationInterceptor</span> <span class="keyword">extends</span> <span class="title">AbstractSqlParserHandler</span> <span class="keyword">implements</span> <span class="title">Interceptor</span> </span>&#123;</span><br><span class="line">  ......</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>继承Interceptor通过@Intercepts拦截StatementHandler的prepare</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line">PaginationInterceptor.class</span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> Object <span class="title">intercept</span><span class="params">(Invocation invocation)</span> <span class="keyword">throws</span> Throwable </span>&#123;</span><br><span class="line">    StatementHandler statementHandler = PluginUtils.realTarget(invocation.getTarget());</span><br><span class="line">    MetaObject metaObject = SystemMetaObject.forObject(statementHandler);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// SQL 解析</span></span><br><span class="line">    <span class="keyword">this</span>.sqlParser(metaObject);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 先判断是不是SELECT操作  (2019-04-10 00:37:31 跳过存储过程)</span></span><br><span class="line">    MappedStatement mappedStatement = (MappedStatement) metaObject.getValue(<span class="string">&quot;delegate.mappedStatement&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (SqlCommandType.SELECT != mappedStatement.getSqlCommandType()</span><br><span class="line">        || StatementType.CALLABLE == mappedStatement.getStatementType()) &#123;</span><br><span class="line">        <span class="keyword">return</span> invocation.proceed();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 针对定义了rowBounds，做为mapper接口方法的参数</span></span><br><span class="line">    BoundSql boundSql = (BoundSql) metaObject.getValue(<span class="string">&quot;delegate.boundSql&quot;</span>);</span><br><span class="line">    Object paramObj = boundSql.getParameterObject();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 判断参数里是否有page对象</span></span><br><span class="line">    IPage&lt;?&gt; page = ParameterUtils.findPage(paramObj).orElse(<span class="keyword">null</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">     * 不需要分页的场合，如果 size 小于 0 返回结果集</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">null</span> == page || page.getSize() &lt; <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> invocation.proceed();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.limit &gt; <span class="number">0</span> &amp;&amp; <span class="keyword">this</span>.limit &lt;= page.getSize()) &#123;</span><br><span class="line">        <span class="comment">//处理单页条数限制</span></span><br><span class="line">        handlerLimit(page);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    String originalSql = boundSql.getSql();</span><br><span class="line">    Connection connection = (Connection) invocation.getArgs()[<span class="number">0</span>];</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (page.isSearchCount() &amp;&amp; !page.isHitCount()) &#123;</span><br><span class="line">      	<span class="comment">//生成查询总数的sql</span></span><br><span class="line">        SqlInfo sqlInfo = SqlParserUtils.getOptimizeCountSql(page.optimizeCountSql(), countSqlParser, originalSql, metaObject);</span><br><span class="line">      	<span class="comment">//查询数据总数，保存在page中</span></span><br><span class="line">        <span class="keyword">this</span>.queryTotal(sqlInfo.getSql(), mappedStatement, boundSql, page, connection);</span><br><span class="line">        <span class="keyword">if</span> (!<span class="keyword">this</span>.continueLimit(page)) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  	<span class="comment">//获取数据库类型</span></span><br><span class="line">    DbType dbType = <span class="keyword">this</span>.dbType == <span class="keyword">null</span> ? JdbcUtils.getDbType(connection.getMetaData().getURL()) : <span class="keyword">this</span>.dbType;</span><br><span class="line"> 		<span class="comment">//获取数据库方言</span></span><br><span class="line">    IDialect dialect = Optional.ofNullable(<span class="keyword">this</span>.dialect).orElseGet(() -&gt; DialectFactory.getDialect(dbType));</span><br><span class="line">  	<span class="comment">//对orderby做处理</span></span><br><span class="line">    String buildSql = concatOrderBy(originalSql, page);</span><br><span class="line">  	<span class="comment">//通过数据库方言生成分页查询sql保存在DialectModel</span></span><br><span class="line">    DialectModel model = dialect.buildPaginationSql(buildSql, page.offset(), page.getSize());</span><br><span class="line">    Configuration configuration = mappedStatement.getConfiguration();</span><br><span class="line">    List&lt;ParameterMapping&gt; mappings = <span class="keyword">new</span> ArrayList&lt;&gt;(boundSql.getParameterMappings());</span><br><span class="line">    Map&lt;String, Object&gt; additionalParameters = (Map&lt;String, Object&gt;) metaObject.getValue(<span class="string">&quot;delegate.boundSql.additionalParameters&quot;</span>);</span><br><span class="line">    model.consumers(mappings, configuration, additionalParameters);</span><br><span class="line">    metaObject.setValue(<span class="string">&quot;delegate.boundSql.sql&quot;</span>, model.getDialectSql());</span><br><span class="line">    metaObject.setValue(<span class="string">&quot;delegate.boundSql.parameterMappings&quot;</span>, mappings);</span><br><span class="line">    <span class="keyword">return</span> invocation.proceed();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>陈允</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://blog.yuner.fun/2020/12/22/Mybatis-Plus%20%E5%88%86%E9%A1%B5/">http://blog.yuner.fun/2020/12/22/Mybatis-Plus%20%E5%88%86%E9%A1%B5/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/Mybatis/"># Mybatis</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2020/12/22/Mybatis%20Interceptor/">Mybatis Interceptor</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© 陈允 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
+    }
+  </script>
+</footer>
+
+    </div>
+</body>
+</html>
