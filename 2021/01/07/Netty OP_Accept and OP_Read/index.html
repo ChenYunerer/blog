@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="陈允">
+
+
+
+
+
+<title>Netty OP_Accept and OP_Read | 陈允的学习笔记</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.1.1"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">陈允的学习笔记</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">陈允的学习笔记</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">全部</a>
+                
+                    <a class="menu-item" href="/category">分类</a>
+                
+                    <a class="menu-item" href="/tag">标签</a>
+                
+                    <a class="menu-item" href="/about">关于</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Netty OP_Accept and OP_Read</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">陈允</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">January 7, 2021&nbsp;&nbsp;23:55:24</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/NIO-Netty/">NIO&Netty</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="Netty-OP-Accept-And-OP-Read"><a href="#Netty-OP-Accept-And-OP-Read" class="headerlink" title="Netty OP_Accept And OP_Read"></a>Netty OP_Accept And OP_Read</h1><p>源码参考：4.1.57.Final-SNAPSHOT</p>
+<h2 id="NioEventLoop-run"><a href="#NioEventLoop-run" class="headerlink" title="NioEventLoop run"></a>NioEventLoop run</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><span class="line">NioEventLoop.class</span><br><span class="line"><span class="comment">//NioEventLoop的run方法循环尝试处理nio事件</span></span><br><span class="line"><span class="comment">//ParentGroup的NioEventLoop在启动的时候设置的InterestOps是SelectionKey.OP_ACCEPT</span></span><br><span class="line"><span class="comment">//NioEventLoop不仅需要处理nio select还需要执行task</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> selectCnt = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">int</span> strategy;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//使用selectStrategy判断当前循环的策略(读取Nio select还是执行task)</span></span><br><span class="line">                <span class="comment">//strategy &gt; 0 的时候表示读取NIO select否则执行task任务</span></span><br><span class="line">                strategy = selectStrategy.calculateStrategy(selectNowSupplier, hasTasks());</span><br><span class="line">                <span class="keyword">switch</span> (strategy) &#123;</span><br><span class="line">                <span class="keyword">case</span> SelectStrategy.CONTINUE:</span><br><span class="line">                    <span class="keyword">continue</span>;</span><br><span class="line">                <span class="keyword">case</span> SelectStrategy.BUSY_WAIT:</span><br><span class="line">                    <span class="comment">// fall-through to SELECT since the busy-wait is not supported with NIO</span></span><br><span class="line">                <span class="keyword">case</span> SelectStrategy.SELECT:</span><br><span class="line">                    <span class="keyword">long</span> curDeadlineNanos = nextScheduledTaskDeadlineNanos();</span><br><span class="line">                    <span class="keyword">if</span> (curDeadlineNanos == -<span class="number">1L</span>) &#123;</span><br><span class="line">                        curDeadlineNanos = NONE; <span class="comment">// nothing on the calendar</span></span><br><span class="line">                    &#125;</span><br><span class="line">                    nextWakeupNanos.set(curDeadlineNanos);</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">if</span> (!hasTasks()) &#123;</span><br><span class="line">                            strategy = select(curDeadlineNanos);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                        <span class="comment">// This update is just to help block unnecessary selector wakeups</span></span><br><span class="line">                        <span class="comment">// so use of lazySet is ok (no race condition)</span></span><br><span class="line">                        nextWakeupNanos.lazySet(AWAKE);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// fall through</span></span><br><span class="line">                <span class="keyword">default</span>:</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">                <span class="comment">// If we receive an IOException here its because the Selector is messed up. Let&#x27;s rebuild</span></span><br><span class="line">                <span class="comment">// the selector and retry. https://github.com/netty/netty/issues/8566</span></span><br><span class="line">                rebuildSelector0();</span><br><span class="line">                selectCnt = <span class="number">0</span>;</span><br><span class="line">                handleLoopException(e);</span><br><span class="line">                <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            selectCnt++;</span><br><span class="line">            cancelledKeys = <span class="number">0</span>;</span><br><span class="line">            needsToSelectAgain = <span class="keyword">false</span>;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> ioRatio = <span class="keyword">this</span>.ioRatio;</span><br><span class="line">            <span class="keyword">boolean</span> ranTasks;</span><br><span class="line">            <span class="comment">//ioRatio表示执行task的比率，100的话表示select之后执行所有task</span></span><br><span class="line">            <span class="comment">//ioRatio 默认50</span></span><br><span class="line">            <span class="keyword">if</span> (ioRatio == <span class="number">100</span>) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="comment">//strategy &gt; 0 表示存在nio事件</span></span><br><span class="line">                    <span class="keyword">if</span> (strategy &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                        <span class="comment">//处理selectionKeys</span></span><br><span class="line">                        processSelectedKeys();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="comment">// Ensure we always run tasks.</span></span><br><span class="line">                    <span class="comment">//ioRatio == 100执行所有有Task</span></span><br><span class="line">                    ranTasks = runAllTasks();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (strategy &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">final</span> <span class="keyword">long</span> ioStartTime = System.nanoTime();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    processSelectedKeys();</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="comment">// Ensure we always run tasks.</span></span><br><span class="line">                    <span class="comment">// 执行Task但是指定了deadline</span></span><br><span class="line">                    <span class="keyword">final</span> <span class="keyword">long</span> ioTime = System.nanoTime() - ioStartTime;</span><br><span class="line">                    ranTasks = runAllTasks(ioTime * (<span class="number">100</span> - ioRatio) / ioRatio);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                ranTasks = runAllTasks(<span class="number">0</span>); <span class="comment">// This will run the minimum number of tasks</span></span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (ranTasks || strategy &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="keyword">if</span> (selectCnt &gt; MIN_PREMATURE_SELECTOR_RETURNS &amp;&amp; logger.isDebugEnabled()) &#123;</span><br><span class="line">                    logger.debug(<span class="string">&quot;Selector.select() returned prematurely &#123;&#125; times in a row for Selector &#123;&#125;.&quot;</span>,</span><br><span class="line">                            selectCnt - <span class="number">1</span>, selector);</span><br><span class="line">                &#125;</span><br><span class="line">                selectCnt = <span class="number">0</span>;</span><br><span class="line">            &#125; <span class="keyword">else</span> <span class="keyword">if</span> (unexpectedSelectorWakeup(selectCnt)) &#123; <span class="comment">// Unexpected wakeup (unusual case)</span></span><br><span class="line">                selectCnt = <span class="number">0</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (CancelledKeyException e) &#123;</span><br><span class="line">            <span class="comment">// Harmless exception - log anyway</span></span><br><span class="line">            <span class="keyword">if</span> (logger.isDebugEnabled()) &#123;</span><br><span class="line">                logger.debug(CancelledKeyException.class.getSimpleName() + &quot; raised by a Selector &#123;&#125; - JDK bug?&quot;,</span><br><span class="line">                        selector, e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Error e) &#123;</span><br><span class="line">            <span class="keyword">throw</span> (Error) e;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            handleLoopException(t);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="comment">// Always handle shutdown even if the loop processing threw an exception.</span></span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="keyword">if</span> (isShuttingDown()) &#123;</span><br><span class="line">                    closeAll();</span><br><span class="line">                    <span class="keyword">if</span> (confirmShutdown()) &#123;</span><br><span class="line">                        <span class="keyword">return</span>;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Error e) &#123;</span><br><span class="line">                <span class="keyword">throw</span> (Error) e;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">                handleLoopException(t);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>NioEventLoop线程不仅仅需要处理NIO事件，也同时兼顾处理一些Runnable Task，所以在for循环中每次执行完processSelectedKeys都需要尝试执行runAllTasks进行任务处理。</p>
+<p>###　selectStrategy</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">DefaultSelectStrategy.class</span><br><span class="line"><span class="comment">//select策略</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">calculateStrategy</span><span class="params">(IntSupplier selectSupplier, <span class="keyword">boolean</span> hasTasks)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="comment">//如果当前存在Task需要处理，则看下nio selector是否有事件(task的处理都在nio事件处理完成之后再处理)</span></span><br><span class="line">    <span class="comment">//如果不存在Task,则直接返回0</span></span><br><span class="line">    <span class="keyword">return</span> hasTasks ? selectSupplier.get() : SelectStrategy.SELECT;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果当前存在Task需要处理，则看下nio selector是否有事件(task的处理都在nio事件处理完成之后再处理)，如果不存在Task,则直接返回0</p>
+<h3 id="ioRatio"><a href="#ioRatio" class="headerlink" title="ioRatio"></a>ioRatio</h3><p>ioRatio表示执行task的比率，100的话表示select之后执行所有task，默认50</p>
+<ol>
+<li>NioEventLoop的run方法循环尝试处理nio事件</li>
+<li>ParentGroup的NioEventLoop在启动的时候设置的InterestOps是SelectionKey.OP_ACCEPT</li>
+<li>NioEventLoop不仅需要处理nio select还需要执行task</li>
+</ol>
+<h3 id="processSelectedKeys"><a href="#processSelectedKeys" class="headerlink" title="processSelectedKeys"></a>processSelectedKeys</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">NioEventLoop.class.</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">processSelectedKey</span><span class="params">(SelectionKey k, AbstractNioChannel ch)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">final</span> AbstractNioChannel.NioUnsafe unsafe = ch.unsafe();</span><br><span class="line">    	<span class="comment">//selectionKey合规性检测</span></span><br><span class="line">        <span class="keyword">if</span> (!k.isValid()) &#123;</span><br><span class="line">            <span class="keyword">final</span> EventLoop eventLoop;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                eventLoop = ch.eventLoop();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Throwable ignored) &#123;</span><br><span class="line">                <span class="comment">// If the channel implementation throws an exception because there is no event loop, we ignore this</span></span><br><span class="line">                <span class="comment">// because we are only trying to determine if ch is registered to this event loop and thus has authority</span></span><br><span class="line">                <span class="comment">// to close ch.</span></span><br><span class="line">                <span class="keyword">return</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">// Only close ch if ch is still registered to this EventLoop. ch could have deregistered from the event loop</span></span><br><span class="line">            <span class="comment">// and thus the SelectionKey could be cancelled as part of the deregistration process, but the channel is</span></span><br><span class="line">            <span class="comment">// still healthy and should not be closed.</span></span><br><span class="line">            <span class="comment">// See https://github.com/netty/netty/issues/5125</span></span><br><span class="line">            <span class="keyword">if</span> (eventLoop == <span class="keyword">this</span>) &#123;</span><br><span class="line">                <span class="comment">// close the channel if the key is not valid anymore</span></span><br><span class="line">                unsafe.close(unsafe.voidPromise());</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">int</span> readyOps = k.readyOps();</span><br><span class="line">            <span class="comment">// We first need to call finishConnect() before try to trigger a read(...) or write(...) as otherwise</span></span><br><span class="line">            <span class="comment">// the NIO JDK channel implementation may throw a NotYetConnectedException.</span></span><br><span class="line">            <span class="comment">//处理SelectionKey.OP_CONNECT事件</span></span><br><span class="line">            <span class="keyword">if</span> ((readyOps &amp; SelectionKey.OP_CONNECT) != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">// remove OP_CONNECT as otherwise Selector.select(..) will always return without blocking</span></span><br><span class="line">                <span class="comment">// See https://github.com/netty/netty/issues/924</span></span><br><span class="line">                <span class="keyword">int</span> ops = k.interestOps();</span><br><span class="line">                ops &amp;= ~SelectionKey.OP_CONNECT;</span><br><span class="line">                k.interestOps(ops);</span><br><span class="line"></span><br><span class="line">                unsafe.finishConnect();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Process OP_WRITE first as we may be able to write some queued buffers and so free memory.</span></span><br><span class="line">            <span class="comment">//处理SelectionKey.OP_WRITE事件</span></span><br><span class="line">            <span class="keyword">if</span> ((readyOps &amp; SelectionKey.OP_WRITE) != <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">// Call forceFlush which will also take care of clear the OP_WRITE once there is nothing left to write</span></span><br><span class="line">                ch.unsafe().forceFlush();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// Also check for readOps of 0 to workaround possible JDK bug which may otherwise lead</span></span><br><span class="line">            <span class="comment">// to a spin loop</span></span><br><span class="line">            <span class="comment">//处理SelectionKey.OP_READ 和 SelectionKey.OP_ACCEPT事件</span></span><br><span class="line">            <span class="keyword">if</span> ((readyOps &amp; (SelectionKey.OP_READ | SelectionKey.OP_ACCEPT)) != <span class="number">0</span> || readyOps == <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">//使用Unsafe进行读取</span></span><br><span class="line">                unsafe.read();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (CancelledKeyException ignored) &#123;</span><br><span class="line">            unsafe.close(unsafe.voidPromise());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="Unsafe-Read-NioMessageUnsafe"><a href="#Unsafe-Read-NioMessageUnsafe" class="headerlink" title="Unsafe Read(NioMessageUnsafe)"></a>Unsafe Read(NioMessageUnsafe)</h2><p>NioMessageUnsafe的read主要就是处理Accept, Read数据的话是NioSocketChannel的NioSocketChannelUnsafe来处理</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">NioMessageUnsafe.class</span><br><span class="line">    </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">assert</span> <span class="title">eventLoop</span><span class="params">()</span>.<span class="title">inEventLoop</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="keyword">final</span> ChannelConfig config = config();</span><br><span class="line">    <span class="keyword">final</span> ChannelPipeline pipeline = pipeline();</span><br><span class="line">    <span class="keyword">final</span> RecvByteBufAllocator.Handle allocHandle = unsafe().recvBufAllocHandle();</span><br><span class="line">    allocHandle.reset(config);</span><br><span class="line">    <span class="keyword">boolean</span> closed = <span class="keyword">false</span>;</span><br><span class="line">    Throwable exception = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">do</span> &#123;</span><br><span class="line">                <span class="comment">//“读取”消息，将消息加入到readBuf中</span></span><br><span class="line">                <span class="comment">//其实这个“读取”仅仅只是Accept了一下请求，将nio SocketChannel封装成NioSocketChannel加入到readBuf</span></span><br><span class="line">                <span class="keyword">int</span> localRead = doReadMessages(readBuf);</span><br><span class="line">                <span class="keyword">if</span> (localRead == <span class="number">0</span>) &#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">if</span> (localRead &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                    closed = <span class="keyword">true</span>;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                allocHandle.incMessagesRead(localRead);</span><br><span class="line">            &#125; <span class="keyword">while</span> (allocHandle.continueReading());</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">            exception = t;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">int</span> size = readBuf.size();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; size; i ++) &#123;</span><br><span class="line">            readPending = <span class="keyword">false</span>;</span><br><span class="line">            <span class="comment">//调用pipeline fireChannelRead开始读取数据</span></span><br><span class="line">            pipeline.fireChannelRead(readBuf.get(i));</span><br><span class="line">        &#125;</span><br><span class="line">        readBuf.clear();</span><br><span class="line">        allocHandle.readComplete();</span><br><span class="line">        <span class="comment">//调用pipeline fireChannelReadComplete处理读取结束逻辑</span></span><br><span class="line">        pipeline.fireChannelReadComplete();</span><br><span class="line">        <span class="keyword">if</span> (exception != <span class="keyword">null</span>) &#123;</span><br><span class="line">            closed = closeOnReadError(exception);</span><br><span class="line">            pipeline.fireExceptionCaught(exception);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (closed) &#123;</span><br><span class="line">            inputShutdown = <span class="keyword">true</span>;</span><br><span class="line">            <span class="keyword">if</span> (isOpen()) &#123;</span><br><span class="line">                close(voidPromise());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// Check if there is a readPending which was not processed yet.</span></span><br><span class="line">        <span class="comment">// This could be for two reasons:</span></span><br><span class="line">        <span class="comment">// * The user called Channel.read() or ChannelHandlerContext.read() in channelRead(...) method</span></span><br><span class="line">        <span class="comment">// * The user called Channel.read() or ChannelHandlerContext.read() in channelReadComplete(...) method</span></span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        <span class="comment">// See https://github.com/netty/netty/issues/2254</span></span><br><span class="line">        <span class="keyword">if</span> (!readPending &amp;&amp; !config.isAutoRead()) &#123;</span><br><span class="line">            removeReadOp();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="doReadMessages"><a href="#doReadMessages" class="headerlink" title="doReadMessages"></a>doReadMessages</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">NioServerSocketChannel.class</span><br><span class="line">    </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">int</span> <span class="title">doReadMessages</span><span class="params">(List&lt;Object&gt; buf)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="comment">//通过java channel accept connection,并获取到SocketChannel</span></span><br><span class="line">    SocketChannel ch = SocketUtils.accept(javaChannel());</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (ch != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//将SocketChannel封装成NioSocketChannel并加入到buf</span></span><br><span class="line">            buf.add(<span class="keyword">new</span> NioSocketChannel(<span class="keyword">this</span>, ch));</span><br><span class="line">            <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        logger.warn(<span class="string">&quot;Failed to create a new channel from an accepted socket.&quot;</span>, t);</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            ch.close();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (Throwable t2) &#123;</span><br><span class="line">            logger.warn(<span class="string">&quot;Failed to close a socket.&quot;</span>, t2);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>doReadMessages方法名称包括“read”其实并不是真实的读取，而是accept请求，封装NioSocketChannel而已</strong></p>
+<p>构建NioSocketChannel之后，调用pipeline fireChannelRead并传入NioSocketChannel。</p>
+<h3 id="pipeline-fireChannelRead"><a href="#pipeline-fireChannelRead" class="headerlink" title="pipeline.fireChannelRead"></a>pipeline.fireChannelRead</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">ServerBootstrap$ServerBootstrapAcceptor</span><br><span class="line"><span class="comment">//这是pipeline其中的一个环节，由AbstractBootstrap在init channel的时候添加到pipeline当中</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">channelRead</span><span class="params">(ChannelHandlerContext ctx, Object msg)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//这个msg就是NioSocketChannel</span></span><br><span class="line">    <span class="keyword">final</span> Channel child = (Channel) msg;</span><br><span class="line">    child.pipeline().addLast(childHandler);</span><br><span class="line">    setChannelOptions(child, childOptions, logger);</span><br><span class="line">    setAttributes(child, childAttrs);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//将NioSocketChannel注册到ChildGroup当中去</span></span><br><span class="line">        childGroup.register(child).addListener(<span class="keyword">new</span> ChannelFutureListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">operationComplete</span><span class="params">(ChannelFuture future)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">                <span class="keyword">if</span> (!future.isSuccess()) &#123;</span><br><span class="line">                    forceClose(child, future.cause());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        forceClose(child, t);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ServerBootstrap$ServerBootstrapAcceptor是pipeline其中的一个环节，由AbstractBootstrap在init channel的时候添加到pipeline当中，用于处理Accept事件，主要就是将构建好的NioSocketChannel注册到ChildGroup当中。</p>
+<p>这里的register流程和NioServerSocketChannel的register流程是一致的，注册NioSocketChannel到EventLoop之后，EventLoop将启动开始监听SelectionKey.OP_READ事件。</p>
+<p>当ChildGroup的EventLoop接受到Read事件之后，同样进入pipeline处理，但是唯一同步的是ChildGroup的EventLoop中的pipeline没有ServerBootstrapAcceptor</p>
+<h2 id="NioSocketChannel"><a href="#NioSocketChannel" class="headerlink" title="NioSocketChannel"></a>NioSocketChannel</h2><p>NioServerSocketChannel doReadMessages方法中Accept connection然后构建NioSocketChannel，这里看下NioSocketChannel的构建</p>
+<h3 id="继承关系-对比NioServerSocketChannel"><a href="#继承关系-对比NioServerSocketChannel" class="headerlink" title="继承关系(对比NioServerSocketChannel)"></a>继承关系(对比NioServerSocketChannel)</h3><pre class="mermaid">classDiagram
+AbstractNioChannel <|-- AbstractNioMessageChannel
+ServerSocketChannel <|-- NioServerSocketChannel
+<<interface>> ServerSocketChannel
+AbstractNioMessageChannel <|-- NioServerSocketChannel
+
+AttributeMap <|-- DefaultAttributeMap
+DefaultAttributeMap <|-- AbstractChannel
+Channel <|-- AbstractChannel
+<<interface>> Channel
+AbstractChannel <|-- AbstractNioChannel
+AbstractNioChannel <|-- AbstractNioByteChannel
+SocketChannel <|--NioSocketChannel
+<<interface>> SocketChannel
+AbstractNioByteChannel <|--NioSocketChannel</pre>
+
+<p>从基础关系可以看到NioSocketChannel和NioServerSocketChannel非常类似，都是AbstractNioChannel的之类。</p>
+<p>差别在于NioSocketChannel继承于AbstractNioByteChannel，而NioServerSocketChannel继承于AbstractNioMessageChannel</p>
+<p>然后来看下AbstractNioByteChannel和AbstractNioMessageChannel的一些差异：</p>
+<p>AbstractNioByteChannel：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AbstractNioByteChannel.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">AbstractNioByteChannel</span><span class="params">(Channel parent, SelectableChannel ch)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//这里指定了readInterestOp为SelectionKey.OP_READ</span></span><br><span class="line">        <span class="keyword">super</span>(parent, ch, SelectionKey.OP_READ);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>AbstractNioMessageChannel:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">AbstractNioMessageChannel.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="title">AbstractNioMessageChannel</span><span class="params">(Channel parent, SelectableChannel ch, <span class="keyword">int</span> readInterestOp)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//这里没有指定readInterestOp而是由子类处理，其子类NioServerSocketChannel指定的readInterestOp是SelectionKey.ACCEPT</span></span><br><span class="line">    <span class="keyword">super</span>(parent, ch, readInterestOp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由此可见：NioServerSocketChannel主要就是处理Accept事件，而NioSocketChannel就是处理Read事件</p>
+<p>这里还需要注意一下：NioSocketChannel的unsafe的实现并不是NioMessageUnsafe而是NioSocketChannelUnsafe</p>
+<h2 id="Unsafe-Read-NioSocketChannelUnsafe"><a href="#Unsafe-Read-NioSocketChannelUnsafe" class="headerlink" title="Unsafe Read(NioSocketChannelUnsafe)"></a>Unsafe Read(NioSocketChannelUnsafe)</h2><p>NioSocketChannelUnsafe read主要处理Read事件而不是Accept</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">AbstractNioByteChannel&amp;NioByteUnsafe</span><br><span class="line">NioByteUnsafe(NioSocketChannelUnsafe的父类)</span><br><span class="line">    </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> <span class="keyword">void</span> <span class="title">read</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ChannelConfig config = config();</span><br><span class="line">    <span class="keyword">if</span> (shouldBreakReadReady(config)) &#123;</span><br><span class="line">        clearReadPending();</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">final</span> ChannelPipeline pipeline = pipeline();</span><br><span class="line">    <span class="keyword">final</span> ByteBufAllocator allocator = config.getAllocator();</span><br><span class="line">    <span class="keyword">final</span> RecvByteBufAllocator.Handle allocHandle = recvBufAllocHandle();</span><br><span class="line">    allocHandle.reset(config);</span><br><span class="line">    ByteBuf byteBuf = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">boolean</span> close = <span class="keyword">false</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">do</span> &#123;</span><br><span class="line">            byteBuf = allocHandle.allocate(allocator);</span><br><span class="line">            allocHandle.lastBytesRead(doReadBytes(byteBuf));</span><br><span class="line">            <span class="keyword">if</span> (allocHandle.lastBytesRead() &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">// nothing was read. release the buffer.</span></span><br><span class="line">                byteBuf.release();</span><br><span class="line">                byteBuf = <span class="keyword">null</span>;</span><br><span class="line">                close = allocHandle.lastBytesRead() &lt; <span class="number">0</span>;</span><br><span class="line">                <span class="keyword">if</span> (close) &#123;</span><br><span class="line">                    <span class="comment">// There is nothing left to read as we received an EOF.</span></span><br><span class="line">                    readPending = <span class="keyword">false</span>;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            allocHandle.incMessagesRead(<span class="number">1</span>);</span><br><span class="line">            readPending = <span class="keyword">false</span>;</span><br><span class="line">            pipeline.fireChannelRead(byteBuf);</span><br><span class="line">            byteBuf = <span class="keyword">null</span>;</span><br><span class="line">        &#125; <span class="keyword">while</span> (allocHandle.continueReading());</span><br><span class="line">        allocHandle.readComplete();</span><br><span class="line">        pipeline.fireChannelReadComplete();</span><br><span class="line">        <span class="keyword">if</span> (close) &#123;</span><br><span class="line">            closeOnRead(pipeline);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Throwable t) &#123;</span><br><span class="line">        handleReadException(pipeline, byteBuf, t, close, allocHandle);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        <span class="comment">// Check if there is a readPending which was not processed yet.</span></span><br><span class="line">        <span class="comment">// This could be for two reasons:</span></span><br><span class="line">        <span class="comment">// * The user called Channel.read() or ChannelHandlerContext.read() in channelRead(...) method</span></span><br><span class="line">        <span class="comment">// * The user called Channel.read() or ChannelHandlerContext.read() in channelReadComplete(...) method</span></span><br><span class="line">        <span class="comment">//</span></span><br><span class="line">        <span class="comment">// See https://github.com/netty/netty/issues/2254</span></span><br><span class="line">        <span class="keyword">if</span> (!readPending &amp;&amp; !config.isAutoRead()) &#123;</span><br><span class="line">            removeReadOp();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><ol>
+<li>ParentGroup NioEventLoop线程run方法，不断循环从selector中判断是否有未处理的 Accept Selectedkey</li>
+<li>如果存在则调用unsafe.read进行读取，unsafe的实现是：NioMessageUnsafe</li>
+<li>NioMessageUnsafe的read方法，通过java channel accept connect并构建NioSocketChannel,将数据读取写到readBuf（List<Object> 这个Object其实就是NioSocketChannel）</li>
+<li>然后调用pipeline.fireChannelRead(readBuf.get(i));将数据交由pipeline管道进行处理</li>
+<li>管道中的ServerBootstrapAcceptor将NioSocketChannel注册到ChildGroup</li>
+<li>ChildGourp EventLoop启动，开始监听Read事件</li>
+<li>如果存在事件则调用unsafe.read进行读取，unsafe的实现是：NioSocketChannelUnsafe</li>
+<li>NioSocketChannelUnsafe的read方法，将数据读入到ByteBuf</li>
+<li>然后调用pipeline.fireChannelRead，将数据交由pipeline管道进行处理</li>
+</ol>
+<h2 id="拆包"><a href="#拆包" class="headerlink" title="拆包"></a>拆包</h2><p>对于粘包问题，Netty通过拆包器来进行分包，拆包器有：</p>
+<ol>
+<li><p>固定长度的拆包器 FixedLengthFrameDecoder</p>
+<p>每个应用层数据包的都拆分成都是固定长度的大小，比如 1024字节。</p>
+</li>
+<li><p>行拆包器 LineBasedFrameDecoder</p>
+<p>每个应用层数据包，都以换行符作为分隔符，进行分割拆分。</p>
+</li>
+<li><p>分隔符拆包器 DelimiterBasedFrameDecoder</p>
+<p>每个应用层数据包，都通过自定义的分隔符，进行分割拆分。</p>
+</li>
+<li><p>基于数据包长度的拆包器 LengthFieldBasedFrameDecoder</p>
+<p>将应用层数据包的长度，作为接收端应用层数据包的拆分依据。按照应用层数据包的大小，拆包。这个拆包器，有一个要求，就是应用层协议中包含数据包的长度。</p>
+</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>陈允</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://blog.yuner.fun/2021/01/07/Netty%20OP_Accept%20and%20OP_Read/">http://blog.yuner.fun/2021/01/07/Netty%20OP_Accept%20and%20OP_Read/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/NIO-Netty/"># NIO&Netty</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/01/07/Netty%20OP_Write/">Netty事件处理、拆包</a>
+            
+            
+            <a class="next" rel="next" href="/2021/01/06/Netty%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B/">Netty启动过程</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© 陈允 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+  <script>
+    if (window.mermaid) {
+      mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
+    }
+  </script>
+</footer>
+
+    </div>
+</body>
+</html>
