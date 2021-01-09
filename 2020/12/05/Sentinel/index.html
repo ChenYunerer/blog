@@ -213,10 +213,10 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">ContextUtil.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">static</span> Context <span class="title">trueEnter</span><span class="params">(String name, String origin)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//先从ThreadLocal中获取Context，如果Context不存在则进行构建</span></span><br><span class="line">    Context context = contextHolder.get();</span><br><span class="line">    <span class="keyword">if</span> (context == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//尝试从缓存中获取entranceNode(DefaultNode)</span></span><br><span class="line">        Map&lt;String, DefaultNode&gt; localCacheNameMap = contextNameNodeMap;</span><br><span class="line">        DefaultNode node = localCacheNameMap.get(name);</span><br><span class="line">        <span class="keyword">if</span> (node == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (localCacheNameMap.size() &gt; Constants.MAX_CONTEXT_NAME_SIZE) &#123;</span><br><span class="line">                setNullContext();</span><br><span class="line">                <span class="keyword">return</span> NULL_CONTEXT;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    LOCK.lock();</span><br><span class="line">                    node = contextNameNodeMap.get(name);</span><br><span class="line">                    <span class="keyword">if</span> (node == <span class="keyword">null</span>) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (contextNameNodeMap.size() &gt; Constants.MAX_CONTEXT_NAME_SIZE) &#123;</span><br><span class="line">                            setNullContext();</span><br><span class="line">                            <span class="keyword">return</span> NULL_CONTEXT;</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="comment">//构建EntranceNode</span></span><br><span class="line">                            node = <span class="keyword">new</span> EntranceNode(<span class="keyword">new</span> StringResourceWrapper(name, EntryType.IN), <span class="keyword">null</span>);</span><br><span class="line">                            <span class="comment">// Add entrance node.</span></span><br><span class="line">                            Constants.ROOT.addChild(node);</span><br><span class="line">                            <span class="comment">//添加到缓存</span></span><br><span class="line">                            Map&lt;String, DefaultNode&gt; newMap = <span class="keyword">new</span> HashMap&lt;&gt;(contextNameNodeMap.size() + <span class="number">1</span>);</span><br><span class="line">                            newMap.putAll(contextNameNodeMap);</span><br><span class="line">                            newMap.put(name, node);</span><br><span class="line">                            contextNameNodeMap = newMap;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    LOCK.unlock();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//构建Context</span></span><br><span class="line">        context = <span class="keyword">new</span> Context(node, name);</span><br><span class="line">        context.setOrigin(origin);</span><br><span class="line">        contextHolder.set(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> context;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h2><p>继承关系：</p>
 <pre class="mermaid">classDiagram
-Node &lt;|-- StatisticNode
-StatisticNode &lt;|-- DefaultNode
-StatisticNode &lt;|-- ClusterNode
-DefaultNode &lt;|-- EntranceNode</pre>
+Node <|-- StatisticNode
+StatisticNode <|-- DefaultNode
+StatisticNode <|-- ClusterNode
+DefaultNode <|-- EntranceNode</pre>
 
 <p>Node：定义了real-time 统计信息的获取方法</p>
 <p>StatisticNode：实现了Node，实现了对各个real-time参数的统计逻辑</p>
@@ -224,18 +224,18 @@ DefaultNode &lt;|-- EntranceNode</pre>
 <p>ClusterNode：为每个ResourceName来保存real-time统计数据（为每个资源保存总的统计信息）</p>
 <p>EntranceNode：维护着DefaultNodeList可以根据所有DefaultNode来统计real-time数据</p>
 <h2 id="ProcessorSlot"><a href="#ProcessorSlot" class="headerlink" title="ProcessorSlot"></a>ProcessorSlot</h2><h3 id="继承关系："><a href="#继承关系：" class="headerlink" title="继承关系："></a>继承关系：</h3><pre class="mermaid">classDiagram
-ProcessorSlot &lt;|-- AbstractLinkedProcessorSlot
-AbstractLinkedProcessorSlot &lt;|-- NodeSelectorSlot
-AbstractLinkedProcessorSlot &lt;|-- ClusterBuilderSlot
-AbstractLinkedProcessorSlot &lt;|-- LogSlot
-AbstractLinkedProcessorSlot &lt;|-- StatisticSlot
-AbstractLinkedProcessorSlot &lt;|-- AuthoritySlot
-AbstractLinkedProcessorSlot &lt;|-- SystemSlot
-AbstractLinkedProcessorSlot &lt;|-- FlowSlot
-AbstractLinkedProcessorSlot &lt;|-- DegradeSlot
-AbstractLinkedProcessorSlot &lt;|-- ParamFlowSlot
-AbstractLinkedProcessorSlot &lt;|-- ProcessorSlotChain
-ProcessorSlotChain &lt;|-- DefaultProcessorSlotChain</pre>
+ProcessorSlot <|-- AbstractLinkedProcessorSlot
+AbstractLinkedProcessorSlot <|-- NodeSelectorSlot
+AbstractLinkedProcessorSlot <|-- ClusterBuilderSlot
+AbstractLinkedProcessorSlot <|-- LogSlot
+AbstractLinkedProcessorSlot <|-- StatisticSlot
+AbstractLinkedProcessorSlot <|-- AuthoritySlot
+AbstractLinkedProcessorSlot <|-- SystemSlot
+AbstractLinkedProcessorSlot <|-- FlowSlot
+AbstractLinkedProcessorSlot <|-- DegradeSlot
+AbstractLinkedProcessorSlot <|-- ParamFlowSlot
+AbstractLinkedProcessorSlot <|-- ProcessorSlotChain
+ProcessorSlotChain <|-- DefaultProcessorSlotChain</pre>
 
 <ol>
 <li>ProcessorSlot（接口）：定义Slot entry fireEntry exit rireExist方法</li>
@@ -256,8 +256,8 @@ ProcessorSlotChain &lt;|-- DefaultProcessorSlotChain</pre>
 class SlotChainBuilder{
     build() ProcessorSlotChain
 }
-SlotChainBuilder &lt;|-- DefaultSlotChainBuilder
-SlotChainBuilder &lt;|-- HotParamSlotChainBuilder</pre>
+SlotChainBuilder <|-- DefaultSlotChainBuilder
+SlotChainBuilder <|-- HotParamSlotChainBuilder</pre>
 
 <ol>
 <li>SlotChainBuilder（接口）：定义了构建Slot Chain的能力</li>
@@ -306,12 +306,12 @@ class ClusterTokenServer{
 start() void
 stop() void
 }
-TokenService &lt;|-- DefaultTokenService
-TokenService &lt;|-- ClusterTokenClient
-ClusterTokenClient &lt;|-- DefaultClusterTokenClient
-TokenService &lt;|-- EmbeddedClusterTokenServer
-ClusterTokenServer &lt;|-- EmbeddedClusterTokenServer
-EmbeddedClusterTokenServer &lt;|-- DefaultEmbeddedTokenServer</pre>
+TokenService <|-- DefaultTokenService
+TokenService <|-- ClusterTokenClient
+ClusterTokenClient <|-- DefaultClusterTokenClient
+TokenService <|-- EmbeddedClusterTokenServer
+ClusterTokenServer <|-- EmbeddedClusterTokenServer
+EmbeddedClusterTokenServer <|-- DefaultEmbeddedTokenServer</pre>
 
 <p>对于TokenService的实现大致可以分为3类：</p>
 <ol>
@@ -330,15 +330,15 @@ close() void
 class ReadableDataSource{
 loadConfig() T
 readSource() S
-getProperty() SentinelProperty&lt;T&gt;
+getProperty() SentinelProperty<T>
 close()
 }
-WritableDataSource &lt;|-- FileWritableDataSource
-ReadableDataSource &lt;|-- AbstractDataSource
-AbstractDataSource &lt;|-- AutoRefreshDataSource
-AbstractDataSource &lt;|-- FileInJarReadableDataSource
-AutoRefreshDataSource &lt;|-- FileRefreshableDataSource
-AbstractDataSource &lt;|-- NacosDataSource</pre>
+WritableDataSource <|-- FileWritableDataSource
+ReadableDataSource <|-- AbstractDataSource
+AbstractDataSource <|-- AutoRefreshDataSource
+AbstractDataSource <|-- FileInJarReadableDataSource
+AutoRefreshDataSource <|-- FileRefreshableDataSource
+AbstractDataSource <|-- NacosDataSource</pre>
 
 <p>WritableDataSource(接口)：提供Rule配置写入的能力定义</p>
 <p>FileWritableDataSource：提供Rule配置写入到文件的能力</p>

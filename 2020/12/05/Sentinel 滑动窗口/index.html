@@ -219,19 +219,19 @@ class ProcessorSlotChain{
 class DefaultProcessorSlotChain{
     first
 }
-ProcessorSlot &lt;|-- AbstractLinkedProcessorSlot
-AbstractLinkedProcessorSlot &lt;|-- AuthoritySlot
-AbstractLinkedProcessorSlot &lt;|-- ClusterBuilderSlot
-AbstractLinkedProcessorSlot &lt;|-- DegradeSlot
-AbstractLinkedProcessorSlot &lt;|-- FlowSlot
-AbstractLinkedProcessorSlot &lt;|-- LogSlot
-AbstractLinkedProcessorSlot &lt;|-- NodeSelectorSlot
-AbstractLinkedProcessorSlot &lt;|-- ParamFlowSlot
-AbstractLinkedProcessorSlot &lt;|-- StatisticSlot
-AbstractLinkedProcessorSlot &lt;|-- SystemSlot
-AbstractLinkedProcessorSlot &lt;|-- ProcessorSlotChain
-ProcessorSlotChain &lt;|-- DefaultProcessorSlotChain
-AbstractLinkedProcessorSlot &lt;|-- AuthoritySlot</pre>
+ProcessorSlot <|-- AbstractLinkedProcessorSlot
+AbstractLinkedProcessorSlot <|-- AuthoritySlot
+AbstractLinkedProcessorSlot <|-- ClusterBuilderSlot
+AbstractLinkedProcessorSlot <|-- DegradeSlot
+AbstractLinkedProcessorSlot <|-- FlowSlot
+AbstractLinkedProcessorSlot <|-- LogSlot
+AbstractLinkedProcessorSlot <|-- NodeSelectorSlot
+AbstractLinkedProcessorSlot <|-- ParamFlowSlot
+AbstractLinkedProcessorSlot <|-- StatisticSlot
+AbstractLinkedProcessorSlot <|-- SystemSlot
+AbstractLinkedProcessorSlot <|-- ProcessorSlotChain
+ProcessorSlotChain <|-- DefaultProcessorSlotChain
+AbstractLinkedProcessorSlot <|-- AuthoritySlot</pre>
 
 <p>每个ProcessorSlot都有不同的责任对应不同的处理逻辑，每次处理完都调用next ProcessorSlot进行处理</p>
 <ol>

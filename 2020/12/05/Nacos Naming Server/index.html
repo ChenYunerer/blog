@@ -210,11 +210,11 @@ cluster *-- instance</pre>
 <h4 id="ConsistencyService"><a href="#ConsistencyService" class="headerlink" title="ConsistencyService"></a>ConsistencyService</h4><p>ConsistencyService接口继承关系图：</p>
 <pre class="mermaid">classDiagram
 class ConsistencyService
-ConsistencyService &lt;|-- EphemeralConsistencyService
-ConsistencyService &lt;|-- PersistentConsistencyService
-ConsistencyService &lt;|-- DelegateConsistencyServiceImpl
-PersistentConsistencyService &lt;|-- RaftConsistencyServiceImpl
-EphemeralConsistencyService &lt;|-- DistroConsistencyServiceImpl</pre>
+ConsistencyService <|-- EphemeralConsistencyService
+ConsistencyService <|-- PersistentConsistencyService
+ConsistencyService <|-- DelegateConsistencyServiceImpl
+PersistentConsistencyService <|-- RaftConsistencyServiceImpl
+EphemeralConsistencyService <|-- DistroConsistencyServiceImpl</pre>
 <p>PersistentConsistencyService：持久化的一致性服务</p>
 <p>EphemeralConsistencyService：短暂的一致性服务</p>
 <p>RaftConsistencyServiceImpl：负责在Raft集群内保持数据持久的一致性</p>
@@ -243,11 +243,11 @@ class HealthCheckProcessor {
     process(HealthCheckTask task) void
     getType() String
 }
-HealthCheckProcessor &lt;|-- HttpHealthCheckProcessor
-HealthCheckProcessor &lt;|-- MysqlHealthCheckProcessor
-HealthCheckProcessor &lt;|-- NoneHealthCheckProcessor
-HealthCheckProcessor &lt;|-- TcpSuperSenseProcessor
-HealthCheckProcessor &lt;|-- HealthCheckProcessorDelegate</pre>
+HealthCheckProcessor <|-- HttpHealthCheckProcessor
+HealthCheckProcessor <|-- MysqlHealthCheckProcessor
+HealthCheckProcessor <|-- NoneHealthCheckProcessor
+HealthCheckProcessor <|-- TcpSuperSenseProcessor
+HealthCheckProcessor <|-- HealthCheckProcessorDelegate</pre>
 
 <p>HttpHealthCheckProcessor：通过HTTP协议调用Instance对应IP端口方式判断Instance是否健康<br>MysqlHealthCheckProcessor：如果Instance是Mysql实例则通过该Processor进行健康检查：获取jdbc连接，执行sql，判断返回值<br>NoneHealthCheckProcessor：不做实际的健康判断，do nothing<br>TcpSuperSenseProcessor：通过TCP协议(使用了NIO)调用Instance对应IP端口的方式判断Instance是否健康<br>HealthCheckProcessorDelegate：HttpHealthCheckProcessor的代理，通过该代理来具体使用以上某个Processor来进行监控检查</p>
 <h4 id="HealthCheckTask"><a href="#HealthCheckTask" class="headerlink" title="HealthCheckTask"></a>HealthCheckTask</h4><p>HealthCheckTask执行流程（ HttpHealthCheckProcessor）</p>

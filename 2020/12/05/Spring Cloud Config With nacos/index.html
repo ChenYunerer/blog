@@ -231,7 +231,7 @@ private ClientWorker worker;
 private ConfigFilterChainManager configFilterChainManager
 ......
 }
-ConfigService &lt;|-- NacosConfigService</pre>
+ConfigService <|-- NacosConfigService</pre>
 
 <p>ConfigService（接口）：抽象了配置服务，定义了与配置服务交互的能力，比如：getConfig获取配置，publishConfig发布配置等</p>
 <p>NacosConfigService：实现了ConfigService，通过HttpAgent与ClientWorker实现了与配置服务交互的能力</p>

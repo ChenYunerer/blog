@@ -271,9 +271,9 @@
 <li>异步刷盘（使用暂存池）</li>
 </ol>
 <pre class="mermaid">classDiagram
-FlushCommitLogService &lt;|-- CommitRealTimeService
-FlushCommitLogService &lt;|-- FlushRealTimeService
-FlushCommitLogService &lt;|-- GroupCommitService</pre>
+FlushCommitLogService <|-- CommitRealTimeService
+FlushCommitLogService <|-- FlushRealTimeService
+FlushCommitLogService <|-- GroupCommitService</pre>
 
 <p>CommitRealTimeService: 负责暂存池中数据的异步刷盘（如果启用了暂存池则该线程将被启动）</p>
 <p>GroupCommitService：负责MappedByteBuffer中数据的同步刷盘</p>
@@ -316,11 +316,11 @@ FlushCommitLogService &lt;|-- GroupCommitService</pre>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">DefaultMessageStore.class</span><br><span class="line">  </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CommitLogDispatcherBuildIndex</span> <span class="keyword">implements</span> <span class="title">CommitLogDispatcher</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">dispatch</span><span class="params">(DispatchRequest request)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (DefaultMessageStore.<span class="keyword">this</span>.messageStoreConfig.isMessageIndexEnable()) &#123;</span><br><span class="line">          	<span class="comment">//如果broker配置支持构建index，则调用indexService buildIndex方法进行构建</span></span><br><span class="line">            DefaultMessageStore.<span class="keyword">this</span>.indexService.buildIndex(request);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">IndexService.class</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">private</span> IndexFile <span class="title">putKey</span><span class="params">(IndexFile indexFile, DispatchRequest msg, String idxKey)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">boolean</span> ok = indexFile.putKey(idxKey, msg.getCommitLogOffset(), msg.getStoreTimestamp()); !ok; ) &#123;</span><br><span class="line">        log.warn(<span class="string">&quot;Index file [&quot;</span> + indexFile.getFileName() + <span class="string">&quot;] is full, trying to create another one&quot;</span>);</span><br><span class="line"></span><br><span class="line">        indexFile = retryGetAndCreateIndexFile();</span><br><span class="line">        <span class="keyword">if</span> (<span class="keyword">null</span> == indexFile) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">				<span class="comment">//往indexFile文件中写入，idxKey，commitlogOffset，时间。</span></span><br><span class="line">      	<span class="comment">//具体的写入流程类似于commitlog的io操作</span></span><br><span class="line">        ok = indexFile.putKey(idxKey, msg.getCommitLogOffset(), msg.getStoreTimestamp());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> indexFile;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h2 id="数据管理"><a href="#数据管理" class="headerlink" title="数据管理"></a>数据管理</h2><pre class="mermaid">classDiagram
-ConfigManager &lt;|-- ConsumerFilterManager
-ConfigManager &lt;|-- ConsumerOffsetManager
-ConfigManager &lt;|-- ScheduleMessageService
-ConfigManager &lt;|-- SubscriptionGroupManager
-ConfigManager &lt;|-- TopicConfigManager</pre>
+ConfigManager <|-- ConsumerFilterManager
+ConfigManager <|-- ConsumerOffsetManager
+ConfigManager <|-- ScheduleMessageService
+ConfigManager <|-- SubscriptionGroupManager
+ConfigManager <|-- TopicConfigManager</pre>
 
 <h3 id="ConfigManager"><a href="#ConfigManager" class="headerlink" title="ConfigManager"></a>ConfigManager</h3><p>ConfigManager提供了：</p>
 <ol>
