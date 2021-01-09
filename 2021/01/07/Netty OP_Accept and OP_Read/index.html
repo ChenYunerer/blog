@@ -221,20 +221,20 @@
 <p>当ChildGroup的EventLoop接受到Read事件之后，同样进入pipeline处理，但是唯一同步的是ChildGroup的EventLoop中的pipeline没有ServerBootstrapAcceptor</p>
 <h2 id="NioSocketChannel"><a href="#NioSocketChannel" class="headerlink" title="NioSocketChannel"></a>NioSocketChannel</h2><p>NioServerSocketChannel doReadMessages方法中Accept connection然后构建NioSocketChannel，这里看下NioSocketChannel的构建</p>
 <h3 id="继承关系-对比NioServerSocketChannel"><a href="#继承关系-对比NioServerSocketChannel" class="headerlink" title="继承关系(对比NioServerSocketChannel)"></a>继承关系(对比NioServerSocketChannel)</h3><pre class="mermaid">classDiagram
-AbstractNioChannel <|-- AbstractNioMessageChannel
-ServerSocketChannel <|-- NioServerSocketChannel
-<<interface>> ServerSocketChannel
-AbstractNioMessageChannel <|-- NioServerSocketChannel
+AbstractNioChannel &lt;|-- AbstractNioMessageChannel
+ServerSocketChannel &lt;|-- NioServerSocketChannel
+&lt;&lt;interface&gt;&gt; ServerSocketChannel
+AbstractNioMessageChannel &lt;|-- NioServerSocketChannel
 
-AttributeMap <|-- DefaultAttributeMap
-DefaultAttributeMap <|-- AbstractChannel
-Channel <|-- AbstractChannel
-<<interface>> Channel
-AbstractChannel <|-- AbstractNioChannel
-AbstractNioChannel <|-- AbstractNioByteChannel
-SocketChannel <|--NioSocketChannel
-<<interface>> SocketChannel
-AbstractNioByteChannel <|--NioSocketChannel</pre>
+AttributeMap &lt;|-- DefaultAttributeMap
+DefaultAttributeMap &lt;|-- AbstractChannel
+Channel &lt;|-- AbstractChannel
+&lt;&lt;interface&gt;&gt; Channel
+AbstractChannel &lt;|-- AbstractNioChannel
+AbstractNioChannel &lt;|-- AbstractNioByteChannel
+SocketChannel &lt;|--NioSocketChannel
+&lt;&lt;interface&gt;&gt; SocketChannel
+AbstractNioByteChannel &lt;|--NioSocketChannel</pre>
 
 <p>从基础关系可以看到NioSocketChannel和NioServerSocketChannel非常类似，都是AbstractNioChannel的之类。</p>
 <p>差别在于NioSocketChannel继承于AbstractNioByteChannel，而NioServerSocketChannel继承于AbstractNioMessageChannel</p>

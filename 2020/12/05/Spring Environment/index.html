@@ -204,19 +204,19 @@ class PropertyResolver {
  getProperty(String key);String
  resolvePlaceholders(String text);String
 }
-PropertyResolver <|-- Environment
-PropertyResolver <|-- ConfigurablePropertyResolver
-Environment <|-- ConfigurableEnvironment
-ConfigurablePropertyResolver <|-- ConfigurableEnvironment
-ConfigurableEnvironment <|-- AbstractEnvironment
-ConfigurableEnvironment <|-- ConfigurableWebEnvironment
-ConfigurableEnvironment <|-- ConfigurableReactiveWebEnvironment
-ConfigurableReactiveWebEnvironment <|-- StandardReactiveWebEnvironment
-AbstractEnvironment <|-- MockEnvironment
-AbstractEnvironment <|-- StandardEnvironment
-StandardEnvironment <|-- StandardReactiveWebEnvironment
-StandardEnvironment <|-- StandardServletEnvironment
-ConfigurableWebEnvironment <|-- StandardServletEnvironment</pre>
+PropertyResolver &lt;|-- Environment
+PropertyResolver &lt;|-- ConfigurablePropertyResolver
+Environment &lt;|-- ConfigurableEnvironment
+ConfigurablePropertyResolver &lt;|-- ConfigurableEnvironment
+ConfigurableEnvironment &lt;|-- AbstractEnvironment
+ConfigurableEnvironment &lt;|-- ConfigurableWebEnvironment
+ConfigurableEnvironment &lt;|-- ConfigurableReactiveWebEnvironment
+ConfigurableReactiveWebEnvironment &lt;|-- StandardReactiveWebEnvironment
+AbstractEnvironment &lt;|-- MockEnvironment
+AbstractEnvironment &lt;|-- StandardEnvironment
+StandardEnvironment &lt;|-- StandardReactiveWebEnvironment
+StandardEnvironment &lt;|-- StandardServletEnvironment
+ConfigurableWebEnvironment &lt;|-- StandardServletEnvironment</pre>
 
 <h3 id="初始化、加载配置流程："><a href="#初始化、加载配置流程：" class="headerlink" title="初始化、加载配置流程："></a>初始化、加载配置流程：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">SpringApplication -&gt; SpringApplication: prepareEnvironment()</span><br><span class="line">SpringApplication -&gt; SpringApplication: getOrCreateEnvironment()</span><br><span class="line">SpringApplication -&gt; SpringApplication: listeners.environmentPrepared(environment)</span><br><span class="line">SpringApplication -&gt; EventPublishingRunListener: environmentPrepared()</span><br><span class="line">EventPublishingRunListener -&gt; EventPublishingRunListener: push event:ApplicationEnvironmentPreparedEvent</span><br><span class="line">EventPublishingRunListener -&gt; ConfigFileApplicationListener: onApplicationEnvironmentPreparedEvent</span><br><span class="line">ConfigFileApplicationListener -&gt; EnvironmentPostProcessor: postProcessor.postProcessEnvironment()</span><br><span class="line">EnvironmentPostProcessor -&gt; ConfigFileApplicationListener: addPropertySources</span><br><span class="line">ConfigFileApplicationListener -&gt; ConfigFileApplicationListener: new Loader(environment, resourceLoader).load();</span><br><span class="line">ConfigFileApplicationListener -&gt; Loader: load and save to MutablePropertySources</span><br></pre></td></tr></table></figure>
 <p>简单流程说明：</p>

@@ -239,13 +239,13 @@
 <p><strong>重点</strong>：</p>
 <p>定时persistAllConsumerOffset：定时持久化Consumer的消费偏移量 默认间隔5秒，这个默认5秒持久化consumer的消费偏移量，如果broker宕机，极有可能造成消息的重复消费，所以consumer一定要做好幂等</p>
 <h2 id="Producer-send-msg"><a href="#Producer-send-msg" class="headerlink" title="Producer send msg"></a>Producer send msg</h2><pre class="mermaid">sequenceDiagram
-Message -&gt; Message: create Message
-Message -&gt; DefaultMQProducer: defaultMQProducer.send(msg)
-DefaultMQProducer -&gt; DefaultMQProducer: change msg topic with Namespace
-DefaultMQProducer -&gt; DefaultMQProducerImpl: defaultMQProducerImpl.send(msg)
-DefaultMQProducerImpl -&gt; DefaultMQProducerImpl: 1.tryToFindTopicPublishInfo
-DefaultMQProducerImpl -&gt; DefaultMQProducerImpl: 2.selectOneMessageQueue
-DefaultMQProducerImpl -&gt; DefaultMQProducerImpl: 3.sendKernelImpl</pre>
+Message -> Message: create Message
+Message -> DefaultMQProducer: defaultMQProducer.send(msg)
+DefaultMQProducer -> DefaultMQProducer: change msg topic with Namespace
+DefaultMQProducer -> DefaultMQProducerImpl: defaultMQProducerImpl.send(msg)
+DefaultMQProducerImpl -> DefaultMQProducerImpl: 1.tryToFindTopicPublishInfo
+DefaultMQProducerImpl -> DefaultMQProducerImpl: 2.selectOneMessageQueue
+DefaultMQProducerImpl -> DefaultMQProducerImpl: 3.sendKernelImpl</pre>
 
 <p>重点关注两点：</p>
 <ol>

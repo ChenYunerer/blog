@@ -241,11 +241,11 @@
 <li>远程调用在实际执行时会添加一个过滤器链，过滤器链的控制逻辑在ProtocolFilterWrapper类的buildInvokerChain()方法中实现，并由Invoker的实现者触发。在默认情况下过滤器链的调用顺序为:ConsumerContextFilter-&gt;MonitorFilter-&gt;FutureFilter，ConsumerContextFilter过滤器主要处理消费者调用时携带的上下文信息，并附加到RpcContext中。MonitorFilter主要对调用过程进行监控，其核心代码是collect方法，该方法会将监控的数据通过Monitor进行收集，收集合存入在本地内存，每隔固定的时间上传到监控节点上。Monitor的默认实现是DubboMonitor，DubboMonitor中会定义一个ConcurrentHahsMap，MonitorFilter的collect方法在执行时会将监控数据保存到该ConcurrentHahsMap中，另外，DubboMonitor默认会开启一个基于线程池的定时任务执行器ScheduledExecutorService，并且在构造函数中启动一个周期性执行任务将ConcureentHashMap中的数据发送到节点上，发送逻辑在send()方法中实现。</li>
 </ol>
 <h3 id="负载均衡LoadBalance"><a href="#负载均衡LoadBalance" class="headerlink" title="负载均衡LoadBalance"></a>负载均衡LoadBalance</h3><pre class="mermaid">classDiagram
-LoadBalance <|-- AbstractLoadBalance
-AbstractLoadBalance <|-- RandomLoadBalance
-AbstractLoadBalance <|-- RoundRobinLoadBalance
-AbstractLoadBalance <|-- LeastActiveLoadBalance
-AbstractLoadBalance <|-- ConsistentHashLoadBalance</pre>
+LoadBalance &lt;|-- AbstractLoadBalance
+AbstractLoadBalance &lt;|-- RandomLoadBalance
+AbstractLoadBalance &lt;|-- RoundRobinLoadBalance
+AbstractLoadBalance &lt;|-- LeastActiveLoadBalance
+AbstractLoadBalance &lt;|-- ConsistentHashLoadBalance</pre>
 
 <ol>
 <li>RandomLoadBalance：带权重的随机随机算法</li>

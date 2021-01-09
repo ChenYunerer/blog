@@ -206,10 +206,10 @@
 <li>获取InjectedElement，使用InjectedElement对Bean进行处理</li>
 </ol>
 <h2 id="InjectedElement"><a href="#InjectedElement" class="headerlink" title="InjectedElement"></a>InjectedElement</h2><h3 id="继承关系"><a href="#继承关系" class="headerlink" title="继承关系"></a>继承关系</h3><pre class="mermaid">classDiagram
-InjectedElement <|-- AutowiredFieldElement
-InjectedElement <|-- AutowiredMethodElement
-InjectedElement <|-- LookupElement
-LookupElement <|-- ResourceElement</pre>
+InjectedElement &lt;|-- AutowiredFieldElement
+InjectedElement &lt;|-- AutowiredMethodElement
+InjectedElement &lt;|-- LookupElement
+LookupElement &lt;|-- ResourceElement</pre>
 
 <ol>
 <li>AutowiredFieldElement通过beanFactory resolveDependency方法获取依赖对象对field进行设置：field.set(bean, value)</li>
