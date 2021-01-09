@@ -43,7 +43,7 @@
     
 
 
-<meta name="generator" content="Hexo 5.1.1"></head>
+<meta name="generator" content="Hexo 5.3.0"></head>
 <body>
     <div class="wrapper">
         <header>
@@ -199,24 +199,19 @@
 
         <div class="post-content">
             <h3 id="Spring-Cloud-Service-Registry-amp-Discovery"><a href="#Spring-Cloud-Service-Registry-amp-Discovery" class="headerlink" title="Spring Cloud Service Registry &amp; Discovery"></a>Spring Cloud Service Registry &amp; Discovery</h3><h4 id="Service-Registry"><a href="#Service-Registry" class="headerlink" title="Service Registry"></a>Service Registry</h4><h5 id="1-Spring-Cloud-Part"><a href="#1-Spring-Cloud-Part" class="headerlink" title="1. Spring Cloud Part"></a>1. Spring Cloud Part</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">AbstractApplicationContext.class</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">finishRefresh</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="comment">// Clear context-level resource caches (such as ASM metadata from scanning).</span></span><br><span class="line">   clearResourceCaches();</span><br><span class="line"></span><br><span class="line">   <span class="comment">// Initialize lifecycle processor for this context.</span></span><br><span class="line">   initLifecycleProcessor();</span><br><span class="line"></span><br><span class="line">   <span class="comment">// Propagate refresh to lifecycle processor first.</span></span><br><span class="line">   getLifecycleProcessor().onRefresh();</span><br><span class="line"></span><br><span class="line">   <span class="comment">// Publish the final event.</span></span><br><span class="line">   publishEvent(<span class="keyword">new</span> ContextRefreshedEvent(<span class="keyword">this</span>));</span><br><span class="line"></span><br><span class="line">   <span class="comment">// Participate in LiveBeansView MBean, if active.</span></span><br><span class="line">   LiveBeansView.registerApplicationContext(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>服务注册：</p>
 <p>容器启动之后进行容器Refresh，Refresh结束后，调用finishRefresh方法，其中getLifecycleProcessor().onRefresh();会获取DefaultLifecycleProcessor，并调用onRefresh方法，紧接着获取所有Lifecycle的实现Bean，构建LifecycleGroup并调用start方法，此处用于服务注册相关的Lifecycle对象为：WebServerStartStopLifecycle，在其start方法中，发送了ServletWebServerInitializedEvent事件，而AbstractAutoServiceRegistration正监听该事件，在接受到事件之后，调用ServiceRegistry进行具体的服务注册，ServiceRegistry的具体实现有EurekaServiceRegistry、NacosServiceRegistry等</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">AbstractApplicationContext -&gt; AbstractApplicationContext: getLifecycleProcessor()</span><br><span class="line">AbstractApplicationContext -&gt; DefaultLifecycleProcessor: onRefresh()</span><br><span class="line">DefaultLifecycleProcessor -&gt; LifecycleGroup:start()</span><br><span class="line">LifecycleGroup -&gt; WebServerStartStopLifecycle:start()</span><br><span class="line">WebServerStartStopLifecycle -&gt; AbstractAutoServiceRegistration: publishEvent \n ServletWebServerInitializedEvent</span><br><span class="line">AbstractAutoServiceRegistration -&gt; AbstractAutoServiceRegistration: listener Event</span><br><span class="line">AbstractAutoServiceRegistration -&gt; ServiceRegistry: register()</span><br><span class="line">ServiceRegistry -&gt; ServiceRegistry的具体实现:</span><br></pre></td></tr></table></figure>
-
 <p>服务下线：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AbstractAutoServiceRegistration -&gt; AbstractAutoServiceRegistration: @PreDestroy destroy()</span><br><span class="line">AbstractAutoServiceRegistration -&gt; AbstractAutoServiceRegistration: stop() deregister()</span><br><span class="line">AbstractAutoServiceRegistration -&gt; ServiceRegistry: serviceRegistry.deregister()</span><br><span class="line">ServiceRegistry -&gt; ServiceRegistry的具体实现:</span><br></pre></td></tr></table></figure>
-
 <p>AbstractAutoServiceRegistration对象生命周期的的@PreDestroy方法：destroy()方法中，会获取到ServiceRegistry对象，并调用其deregister方法，具体的实现由子类实现</p>
 <h5 id="2-Nacos-Part"><a href="#2-Nacos-Part" class="headerlink" title="2. Nacos Part"></a>2. Nacos Part</h5><h6 id="register"><a href="#register" class="headerlink" title="register"></a>register</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">NacosServiceRegistry -&gt; NacosNamingService:registerInstance()</span><br><span class="line">NacosNamingService -&gt; NacosNamingService: create BeatInfo</span><br><span class="line">NacosNamingService -&gt; BeatReactor:addBeatInfo()</span><br><span class="line">NacosNamingService -&gt; NamingProxy:registerService</span><br><span class="line">NamingProxy -&gt; NamingProxy: choose server</span><br><span class="line">NamingProxy -&gt; HttpClient: send http request for register</span><br><span class="line">BeatReactor -&gt; ScheduledExecutorService: schedule BeatTask</span><br><span class="line">ScheduledExecutorService(BeatReactor) -&gt; NamingProxy: sendBeat() or register()</span><br></pre></td></tr></table></figure>
-
 <p>简单来说：</p>
 <ol>
 <li>nacos使用http协议向server注册自己</li>
 <li>同时开启定时任务，每隔一段时间（默认5秒）发送心跳</li>
 </ol>
 <h6 id="deregister"><a href="#deregister" class="headerlink" title="deregister"></a>deregister</h6><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">NacosServiceRegistry -&gt; NacosNamingService: deregister()</span><br><span class="line">NacosNamingService -&gt; NamingService: deregisterInstance();</span><br><span class="line">NamingService -&gt; BeatReactor: removeBeatInfo() 取消定时任务</span><br><span class="line">NamingService -&gt; NamingProxy: deregisterService()</span><br><span class="line">NamingProxy -&gt; HttpClient: send http request for deregister</span><br></pre></td></tr></table></figure>
-
 <p>简单来说：</p>
 <ol>
 <li>通过BeatReactor取消定时任务，避免任务下线后还不停的发送心跳</li>
@@ -225,7 +220,6 @@
 <h4 id="Service-Discovery"><a href="#Service-Discovery" class="headerlink" title="Service Discovery"></a>Service Discovery</h4><p>NacosDiscoveryClient实现了Spring DiscoveryClient接口</p>
 <p>具体的寻址由NacosServiceDiscovery来处理</p>
 <h5 id="Pull"><a href="#Pull" class="headerlink" title="Pull"></a>Pull</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">NacosDiscoveryClient -&gt; NacosServiceDiscovery: getInstances()</span><br><span class="line">NacosServiceDiscovery -&gt; NamingService: selectInstances()</span><br><span class="line">NamingService -&gt; HostReactor: getServiceInfo()</span><br><span class="line">HostReactor -&gt; HostReactor: try get service info from catch</span><br><span class="line">HostReactor -&gt; NamingProxy: if no catch, get service from nacos server</span><br><span class="line">NamingProxy -&gt; HostReactor: response service info</span><br><span class="line">HostReactor -&gt; HostReactor: catch service info \n catch: 1 map 2 diskcatch</span><br><span class="line">HostReactor -&gt; UpdateTask: start UpdateTask: 每隔一定时间向nacos服务请求服务信息并更新缓存</span><br></pre></td></tr></table></figure>
-
 <p>简单来说：</p>
 <ol>
 <li>从本地缓存尝试获取服务信息</li>
@@ -302,7 +296,7 @@
     <div class="copyright">
         <span>© 陈允 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
     </div>
-<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+<script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
   <script>
     if (window.mermaid) {
       mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});

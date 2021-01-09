@@ -43,7 +43,7 @@
     
 
 
-<meta name="generator" content="Hexo 5.1.1"></head>
+<meta name="generator" content="Hexo 5.3.0"></head>
 <body>
     <div class="wrapper">
         <header>
@@ -201,7 +201,6 @@
             <h2 id="Tomcat启动分析"><a href="#Tomcat启动分析" class="headerlink" title="Tomcat启动分析"></a>Tomcat启动分析</h2><hr>
 <p>tomcat8.5启动入口：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">org.apache.catalina.startup.Bootstrap</span><br></pre></td></tr></table></figure>
-
 <p>Bootstrap.main()方法主要处理：</p>
 <ol>
 <li>构建Bootstrap对象，调用其init()方法，该方法主要处理：初始化ClassLoader，构建Catalina对象，并为其设置parentClassLoader</li>
@@ -357,7 +356,7 @@
     <div class="copyright">
         <span>© 陈允 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
     </div>
-<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+<script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
   <script>
     if (window.mermaid) {
       mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});

@@ -43,7 +43,7 @@
     
 
 
-<meta name="generator" content="Hexo 5.1.1"></head>
+<meta name="generator" content="Hexo 5.3.0"></head>
 <body>
     <div class="wrapper">
         <header>
@@ -209,16 +209,14 @@
 <p>Context产生于AbstractSentinelInterceptor拦截器的preHandle方法，为每个请求（Thread）构建Context，Context维护了entranceNode（DefaultNode）以及curEntry（Entry）</p>
 <p>拦截器拦截请求，构建Context：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">AbstractSentinelInterceptor.class</span><br><span class="line">    </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">preHandle</span><span class="params">(HttpServletRequest request, HttpServletResponse response, Object handler)</span></span></span><br><span class="line"><span class="function">    <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        String resourceName = getResourceName(request);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (StringUtil.isNotEmpty(resourceName)) &#123;</span><br><span class="line">            <span class="comment">// Parse the request origin using registered origin parser.</span></span><br><span class="line">            String origin = parseOrigin(request);</span><br><span class="line">            <span class="comment">//通过ContextUtil构建Context</span></span><br><span class="line">            ContextUtil.enter(SENTINEL_SPRING_WEB_CONTEXT_NAME, origin);</span><br><span class="line">            Entry entry = SphU.entry(resourceName, ResourceTypeConstants.COMMON_WEB, EntryType.IN);</span><br><span class="line"></span><br><span class="line">            setEntryInRequest(request, baseWebMvcConfig.getRequestAttributeName(), entry);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (BlockException e) &#123;</span><br><span class="line">        handleBlockException(request, response, e);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>具体Context构建：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">ContextUtil.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">static</span> Context <span class="title">trueEnter</span><span class="params">(String name, String origin)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//先从ThreadLocal中获取Context，如果Context不存在则进行构建</span></span><br><span class="line">    Context context = contextHolder.get();</span><br><span class="line">    <span class="keyword">if</span> (context == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">//尝试从缓存中获取entranceNode(DefaultNode)</span></span><br><span class="line">        Map&lt;String, DefaultNode&gt; localCacheNameMap = contextNameNodeMap;</span><br><span class="line">        DefaultNode node = localCacheNameMap.get(name);</span><br><span class="line">        <span class="keyword">if</span> (node == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">if</span> (localCacheNameMap.size() &gt; Constants.MAX_CONTEXT_NAME_SIZE) &#123;</span><br><span class="line">                setNullContext();</span><br><span class="line">                <span class="keyword">return</span> NULL_CONTEXT;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    LOCK.lock();</span><br><span class="line">                    node = contextNameNodeMap.get(name);</span><br><span class="line">                    <span class="keyword">if</span> (node == <span class="keyword">null</span>) &#123;</span><br><span class="line">                        <span class="keyword">if</span> (contextNameNodeMap.size() &gt; Constants.MAX_CONTEXT_NAME_SIZE) &#123;</span><br><span class="line">                            setNullContext();</span><br><span class="line">                            <span class="keyword">return</span> NULL_CONTEXT;</span><br><span class="line">                        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                            <span class="comment">//构建EntranceNode</span></span><br><span class="line">                            node = <span class="keyword">new</span> EntranceNode(<span class="keyword">new</span> StringResourceWrapper(name, EntryType.IN), <span class="keyword">null</span>);</span><br><span class="line">                            <span class="comment">// Add entrance node.</span></span><br><span class="line">                            Constants.ROOT.addChild(node);</span><br><span class="line">                            <span class="comment">//添加到缓存</span></span><br><span class="line">                            Map&lt;String, DefaultNode&gt; newMap = <span class="keyword">new</span> HashMap&lt;&gt;(contextNameNodeMap.size() + <span class="number">1</span>);</span><br><span class="line">                            newMap.putAll(contextNameNodeMap);</span><br><span class="line">                            newMap.put(name, node);</span><br><span class="line">                            contextNameNodeMap = newMap;</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                    LOCK.unlock();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//构建Context</span></span><br><span class="line">        context = <span class="keyword">new</span> Context(node, name);</span><br><span class="line">        context.setOrigin(origin);</span><br><span class="line">        contextHolder.set(context);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> context;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h2 id="Node"><a href="#Node" class="headerlink" title="Node"></a>Node</h2><p>继承关系：</p>
 <pre class="mermaid">classDiagram
-Node <|-- StatisticNode
-StatisticNode <|-- DefaultNode
-StatisticNode <|-- ClusterNode
-DefaultNode <|-- EntranceNode</pre>
+Node &lt;|-- StatisticNode
+StatisticNode &lt;|-- DefaultNode
+StatisticNode &lt;|-- ClusterNode
+DefaultNode &lt;|-- EntranceNode</pre>
 
 <p>Node：定义了real-time 统计信息的获取方法</p>
 <p>StatisticNode：实现了Node，实现了对各个real-time参数的统计逻辑</p>
@@ -226,18 +224,18 @@ DefaultNode <|-- EntranceNode</pre>
 <p>ClusterNode：为每个ResourceName来保存real-time统计数据（为每个资源保存总的统计信息）</p>
 <p>EntranceNode：维护着DefaultNodeList可以根据所有DefaultNode来统计real-time数据</p>
 <h2 id="ProcessorSlot"><a href="#ProcessorSlot" class="headerlink" title="ProcessorSlot"></a>ProcessorSlot</h2><h3 id="继承关系："><a href="#继承关系：" class="headerlink" title="继承关系："></a>继承关系：</h3><pre class="mermaid">classDiagram
-ProcessorSlot <|-- AbstractLinkedProcessorSlot
-AbstractLinkedProcessorSlot <|-- NodeSelectorSlot
-AbstractLinkedProcessorSlot <|-- ClusterBuilderSlot
-AbstractLinkedProcessorSlot <|-- LogSlot
-AbstractLinkedProcessorSlot <|-- StatisticSlot
-AbstractLinkedProcessorSlot <|-- AuthoritySlot
-AbstractLinkedProcessorSlot <|-- SystemSlot
-AbstractLinkedProcessorSlot <|-- FlowSlot
-AbstractLinkedProcessorSlot <|-- DegradeSlot
-AbstractLinkedProcessorSlot <|-- ParamFlowSlot
-AbstractLinkedProcessorSlot <|-- ProcessorSlotChain
-ProcessorSlotChain <|-- DefaultProcessorSlotChain</pre>
+ProcessorSlot &lt;|-- AbstractLinkedProcessorSlot
+AbstractLinkedProcessorSlot &lt;|-- NodeSelectorSlot
+AbstractLinkedProcessorSlot &lt;|-- ClusterBuilderSlot
+AbstractLinkedProcessorSlot &lt;|-- LogSlot
+AbstractLinkedProcessorSlot &lt;|-- StatisticSlot
+AbstractLinkedProcessorSlot &lt;|-- AuthoritySlot
+AbstractLinkedProcessorSlot &lt;|-- SystemSlot
+AbstractLinkedProcessorSlot &lt;|-- FlowSlot
+AbstractLinkedProcessorSlot &lt;|-- DegradeSlot
+AbstractLinkedProcessorSlot &lt;|-- ParamFlowSlot
+AbstractLinkedProcessorSlot &lt;|-- ProcessorSlotChain
+ProcessorSlotChain &lt;|-- DefaultProcessorSlotChain</pre>
 
 <ol>
 <li>ProcessorSlot（接口）：定义Slot entry fireEntry exit rireExist方法</li>
@@ -258,40 +256,39 @@ ProcessorSlotChain <|-- DefaultProcessorSlotChain</pre>
 class SlotChainBuilder{
     build() ProcessorSlotChain
 }
-SlotChainBuilder <|-- DefaultSlotChainBuilder
-SlotChainBuilder <|-- HotParamSlotChainBuilder</pre>
+SlotChainBuilder &lt;|-- DefaultSlotChainBuilder
+SlotChainBuilder &lt;|-- HotParamSlotChainBuilder</pre>
 
 <ol>
 <li>SlotChainBuilder（接口）：定义了构建Slot Chain的能力</li>
 <li>DefaultSlotChainBuilder：构建DefaultSlotChain，调用路径为：</li>
 </ol>
 <pre class="mermaid">graph LR;
-NodeSelectorSlot-->ClusterBuilderSlot;
-ClusterBuilderSlot-->LogSlot;
-LogSlot-->StatisticSlot;
-StatisticSlot-->AuthoritySlot;
-AuthoritySlot-->SystemSlot;
-SystemSlot-->FlowSlot;
-FlowSlot-->DegradeSlot;</pre>
+NodeSelectorSlot--&gt;ClusterBuilderSlot;
+ClusterBuilderSlot--&gt;LogSlot;
+LogSlot--&gt;StatisticSlot;
+StatisticSlot--&gt;AuthoritySlot;
+AuthoritySlot--&gt;SystemSlot;
+SystemSlot--&gt;FlowSlot;
+FlowSlot--&gt;DegradeSlot;</pre>
 
 <ol start="3">
 <li>HotParamSlotChainBuilder：构建HotParamSlotChain，调用路径为：</li>
 </ol>
 <pre class="mermaid">graph LR;
-NodeSelectorSlot-->ClusterBuilderSlot;
-ClusterBuilderSlot-->LogSlot;
-LogSlot-->StatisticSlot;
-StatisticSlot-->ParamFlowSlot;
-ParamFlowSlot-->SystemSlot;
-SystemSlot-->AuthoritySlot;
-AuthoritySlot-->FlowSlot;
-FlowSlot-->DegradeSlot;</pre>
+NodeSelectorSlot--&gt;ClusterBuilderSlot;
+ClusterBuilderSlot--&gt;LogSlot;
+LogSlot--&gt;StatisticSlot;
+StatisticSlot--&gt;ParamFlowSlot;
+ParamFlowSlot--&gt;SystemSlot;
+SystemSlot--&gt;AuthoritySlot;
+AuthoritySlot--&gt;FlowSlot;
+FlowSlot--&gt;DegradeSlot;</pre>
 
 <p>HotParamSlotChainBuilder与DefaultSlotChainBuilder的不同在于HotParamSlotChainBuilder构建的ProcessorSlotChain增加了ParamFlowSlot，提供了热点规则的控制能力</p>
 <p>相同资源的SlotChain是一样的</p>
 <p>SlotChainBuilder的构建（SlotChainProvider）：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">SlotChainProvider.class</span><br><span class="line">    </span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ProcessorSlotChain <span class="title">newSlotChain</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (slotChainBuilder != <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> slotChainBuilder.build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Resolve the slot chain builder SPI.</span></span><br><span class="line">    slotChainBuilder = SpiLoader.loadFirstInstanceOrDefault(SlotChainBuilder.class, DefaultSlotChainBuilder.class);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (slotChainBuilder == <span class="keyword">null</span>) &#123;</span><br><span class="line">        <span class="comment">// Should not go through here.</span></span><br><span class="line">        RecordLog.warn(<span class="string">&quot;[SlotChainProvider] Wrong state when resolving slot chain builder, using default&quot;</span>);</span><br><span class="line">        slotChainBuilder = <span class="keyword">new</span> DefaultSlotChainBuilder();</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        RecordLog.info(<span class="string">&quot;[SlotChainProvider] Global slot chain builder resolved: &quot;</span></span><br><span class="line">            + slotChainBuilder.getClass().getCanonicalName());</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> slotChainBuilder.build();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <h2 id="TokenServer集群限流"><a href="#TokenServer集群限流" class="headerlink" title="TokenServer集群限流"></a>TokenServer集群限流</h2><p>流控规则由FlowSlot负责，FlowSlot使用FlowRuleChecker（FlowRuleChecker维护了FlowRuleManager）进行控制。</p>
 <p>流控可分为：</p>
 <ol>
@@ -309,12 +306,12 @@ class ClusterTokenServer{
 start() void
 stop() void
 }
-TokenService <|-- DefaultTokenService
-TokenService <|-- ClusterTokenClient
-ClusterTokenClient <|-- DefaultClusterTokenClient
-TokenService <|-- EmbeddedClusterTokenServer
-ClusterTokenServer <|-- EmbeddedClusterTokenServer
-EmbeddedClusterTokenServer <|-- DefaultEmbeddedTokenServer</pre>
+TokenService &lt;|-- DefaultTokenService
+TokenService &lt;|-- ClusterTokenClient
+ClusterTokenClient &lt;|-- DefaultClusterTokenClient
+TokenService &lt;|-- EmbeddedClusterTokenServer
+ClusterTokenServer &lt;|-- EmbeddedClusterTokenServer
+EmbeddedClusterTokenServer &lt;|-- DefaultEmbeddedTokenServer</pre>
 
 <p>对于TokenService的实现大致可以分为3类：</p>
 <ol>
@@ -324,7 +321,6 @@ EmbeddedClusterTokenServer <|-- DefaultEmbeddedTokenServer</pre>
 </ol>
 <h2 id="Rule-Config持久化"><a href="#Rule-Config持久化" class="headerlink" title="Rule Config持久化"></a>Rule Config持久化</h2><p>Netty ModifyRulesCommandHandler接受到Rule修改、设置的请求，生成对应的Rule，交由各个RuleManager之后对Rule进行持久化处理</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">ModifyRulesCommandHandler.class</span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> CommandResponse&lt;String&gt; <span class="title">handle</span><span class="params">(CommandRequest request)</span> </span>&#123;</span><br><span class="line">  	......</span><br><span class="line">    <span class="keyword">if</span> (FLOW_RULE_TYPE.equalsIgnoreCase(type)) &#123;</span><br><span class="line">        <span class="comment">//对数据进行解析，获取到对应的Rule对象</span></span><br><span class="line">        List&lt;FlowRule&gt; flowRules = JSONArray.parseArray(data, FlowRule.class);</span><br><span class="line">        <span class="comment">//将Rule对象交由对应的RuleManager处理</span></span><br><span class="line">        FlowRuleManager.loadRules(flowRules);</span><br><span class="line">        <span class="comment">//进行Rule的持久化处理</span></span><br><span class="line">        <span class="keyword">if</span> (!writeToDataSource(getFlowDataSource(), flowRules)) &#123;</span><br><span class="line">            result = WRITE_DS_FAILURE_MSG;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> CommandResponse.ofSuccess(result);</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span></span><br><span class="line">        ......</span><br><span class="line">    <span class="keyword">return</span> CommandResponse.ofFailure(<span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;invalid type&quot;</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//持久化处理</span></span><br><span class="line"><span class="keyword">private</span> &lt;T&gt; <span class="function"><span class="keyword">boolean</span> <span class="title">writeToDataSource</span><span class="params">(WritableDataSource&lt;T&gt; dataSource, T value)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (dataSource != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//调用WritableDataSource对象进行数据持久化</span></span><br><span class="line">                dataSource.write(value);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                RecordLog.warn(<span class="string">&quot;Write data source failed&quot;</span>, e);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">true</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
-
 <p>持久化以及配置读取相关接口继承关系：</p>
 <pre class="mermaid">classDiagram
 class WritableDataSource{
@@ -334,15 +330,15 @@ close() void
 class ReadableDataSource{
 loadConfig() T
 readSource() S
-getProperty() SentinelProperty<T>
+getProperty() SentinelProperty&lt;T&gt;
 close()
 }
-WritableDataSource <|-- FileWritableDataSource
-ReadableDataSource <|-- AbstractDataSource
-AbstractDataSource <|-- AutoRefreshDataSource
-AbstractDataSource <|-- FileInJarReadableDataSource
-AutoRefreshDataSource <|-- FileRefreshableDataSource
-AbstractDataSource <|-- NacosDataSource</pre>
+WritableDataSource &lt;|-- FileWritableDataSource
+ReadableDataSource &lt;|-- AbstractDataSource
+AbstractDataSource &lt;|-- AutoRefreshDataSource
+AbstractDataSource &lt;|-- FileInJarReadableDataSource
+AutoRefreshDataSource &lt;|-- FileRefreshableDataSource
+AbstractDataSource &lt;|-- NacosDataSource</pre>
 
 <p>WritableDataSource(接口)：提供Rule配置写入的能力定义</p>
 <p>FileWritableDataSource：提供Rule配置写入到文件的能力</p>
@@ -355,10 +351,8 @@ AbstractDataSource <|-- NacosDataSource</pre>
 <h2 id="Metrix-Log"><a href="#Metrix-Log" class="headerlink" title="Metrix Log"></a>Metrix Log</h2><p>Metrix日志用户提供DashBoard查询节点的Real-Time信息，比如QPS等等</p>
 <p>FlowRuleManager的静态初始化块开启Task，每隔1S执行MetricTimerListener</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">FlowRuleManager.class</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">FlowRuleManager</span> </span>&#123;</span><br><span class="line">	<span class="keyword">static</span> &#123;</span><br><span class="line">    	currentProperty.addListener(LISTENER);</span><br><span class="line">    	SCHEDULER.scheduleAtFixedRate(<span class="keyword">new</span> MetricTimerListener(), <span class="number">0</span>, <span class="number">1</span>, TimeUnit.SECONDS);</span><br><span class="line">	&#125;</span><br><span class="line">    ......</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 <p>MetricTimerListener会将所有ClusterNode中MetricNode的信息（passQps、blockQps、successQps、exceptionQps、rt、occupiedPassQps等）写入到文件，写入操作由MetricWriter来执行，MetricWriter会对记录写入记录文件并为其生产索引，写入索引文件</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">MetricTimerListener.class</span><br><span class="line">    </span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Map&lt;Long, List&lt;MetricNode&gt;&gt; maps = <span class="keyword">new</span> TreeMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">for</span> (Entry&lt;ResourceWrapper, ClusterNode&gt; e : ClusterBuilderSlot.getClusterNodeMap().entrySet()) &#123;</span><br><span class="line">        ClusterNode node = e.getValue();</span><br><span class="line">        Map&lt;Long, MetricNode&gt; metrics = node.metrics();</span><br><span class="line">        aggregate(maps, metrics, node);</span><br><span class="line">    &#125;</span><br><span class="line">    aggregate(maps, Constants.ENTRY_NODE.metrics(), Constants.ENTRY_NODE);</span><br><span class="line">    <span class="keyword">if</span> (!maps.isEmpty()) &#123;</span><br><span class="line">        <span class="keyword">for</span> (Entry&lt;Long, List&lt;MetricNode&gt;&gt; entry : maps.entrySet()) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                metricWriter.write(entry.getKey(), entry.getValue());</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                RecordLog.warn(<span class="string">&quot;[MetricTimerListener] Write metric error&quot;</span>, e);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
 
         </div>
 
@@ -421,7 +415,7 @@ AbstractDataSource <|-- NacosDataSource</pre>
     <div class="copyright">
         <span>© 陈允 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
     </div>
-<script src='https://unpkg.com/mermaid@8.7.0/dist/mermaid.min.js'></script>
+<script src='https://unpkg.com/mermaid@8.8.4/dist/mermaid.min.js'></script>
   <script>
     if (window.mermaid) {
       mermaid.initialize({{ JSON.stringify(theme.mermaid.options) }});
