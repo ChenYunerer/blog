@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">January 22, 2021&nbsp;&nbsp;22:22:10</a>
+                        Date: <a href="#">January 24, 2021&nbsp;&nbsp;19:41:16</a>
                         </span>
                     
                     
@@ -237,6 +237,9 @@
 <li>垃圾回收并发标记</li>
 </ol>
 <h2 id="编程题"><a href="#编程题" class="headerlink" title="编程题"></a>编程题</h2><p>编程：计算一个十进制数的二进制1的数量</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 根据性质暴力求解</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Integer <span class="title">getNumOfOne0</span><span class="params">(Integer n, Integer num)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>) &#123;</span><br><span class="line">        num++;</span><br><span class="line">        <span class="keyword">return</span> num;</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> num;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> a = n % <span class="number">2</span>;</span><br><span class="line">    n = n / <span class="number">2</span>;</span><br><span class="line">    num = num + a;</span><br><span class="line">    <span class="keyword">return</span> getNumOfOne0(n, num);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Integer.toBinaryString投机取消</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Integer <span class="title">getNumOfOne1</span><span class="params">(Integer n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> num = <span class="number">0</span>;</span><br><span class="line">    String binaryString = Integer.toBinaryString(n);</span><br><span class="line">    <span class="keyword">char</span>[] binaryChars = binaryString.toCharArray();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">char</span> c : binaryChars) &#123;</span><br><span class="line">        num = num + (c == <span class="string">&#x27;1&#x27;</span> ? <span class="number">1</span> : <span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> num;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 通过位运算右移进行计算</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Integer <span class="title">getNumOfOne2</span><span class="params">(Integer n, Integer num)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> num;</span><br><span class="line">    &#125;</span><br><span class="line">    num = num + (n &amp; <span class="number">1</span>);</span><br><span class="line">    n = n &gt;&gt; <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> getNumOfOne2(n, num);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
         </div>
 
@@ -251,7 +254,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2021/01/22/2021-01-22%E6%BB%B4%E6%BB%B4%E4%B8%80%E9%9D%A2/">http://blog.yuner.fun/2021/01/22/2021-01-22%E6%BB%B4%E6%BB%B4%E4%B8%80%E9%9D%A2/</a></span>
+                        <span><a href="http://blog.yuner.fun/2021/01/24/2021-01-22%E6%BB%B4%E6%BB%B4%E4%B8%80%E9%9D%A2/">http://blog.yuner.fun/2021/01/24/2021-01-22%E6%BB%B4%E6%BB%B4%E4%B8%80%E9%9D%A2/</a></span>
                     </p>
                 
                 
@@ -282,6 +285,8 @@
             </div>
         </section>
         <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/01/24/Tree/">Tree</a>
             
             
             <a class="next" rel="next" href="/2021/01/08/Netty%20Frame%20Decoder/">Netty Frame Decoder</a>
