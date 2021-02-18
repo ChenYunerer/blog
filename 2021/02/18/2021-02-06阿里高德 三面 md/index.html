@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">February 15, 2021&nbsp;&nbsp;22:11:48</a>
+                        Date: <a href="#">February 18, 2021&nbsp;&nbsp;20:11:45</a>
                         </span>
                     
                     
@@ -200,7 +200,13 @@
         <div class="post-content">
             <h1 id="高德-数据中台Java开发工程师-三面（在线）"><a href="#高德-数据中台Java开发工程师-三面（在线）" class="headerlink" title="高德 数据中台Java开发工程师 三面（在线）"></a>高德 数据中台Java开发工程师 三面（在线）</h1><ol>
 <li>聊项目</li>
-<li>clickhoue与其他数据库的比较，比如InfluxDB和timescaledb</li>
+<li>clickhoue与其他数据库的比较，比如InfluxDB和timescaledb<ol>
+<li>InfluxDB16年开源版本不在支持集群功能</li>
+<li>timescaledb本身基于PostGresql，对于大数据量的支持较差，但是支持丰富的SQL功能</li>
+<li>Druid由于架构问题，没有对应封装，公司内部无法使用</li>
+<li>Clickshouse其他产品线有成功案例，且刚好符合我们要求</li>
+</ol>
+</li>
 <li>红黑树和AVL树比较<ol>
 <li>AVL树：平衡二叉查找树，对于平衡的要求是：一个结点的左右子树的高度差不能超过1，否则需要进行旋转来保持这个特性</li>
 <li>红黑树：对于平衡的要求是：从根节点到其他叶子结点的路径长度不能像差超过2倍，否则需要通过旋转、变色来保持这个特性</li>
@@ -220,7 +226,10 @@
 <li>当时没答上来具体为什么反射慢</li>
 </ol>
 </li>
-<li>java 锁，哪些锁是可重入的（synchronized以及基于AQS的锁都是可重入的）</li>
+<li>java 锁，哪些锁是可重入的<ol>
+<li>synchronized以及基于AQS的锁都是可重入的</li>
+</ol>
+</li>
 <li>nio netty poll epoll select</li>
 <li>bio是否可以使用epoll、poll，我的回答是可以，这个不懂得在看看<ol>
 <li>我理解epoll poll都是底层实现，bio是表层的表现，两者并不是强关联，就像计算机网络分层一样，计算底层是epoll上层也可以封装成bio模式</li>
@@ -260,7 +269,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2021/02/15/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%B8%89%E9%9D%A2%20md/">http://blog.yuner.fun/2021/02/15/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%B8%89%E9%9D%A2%20md/</a></span>
+                        <span><a href="http://blog.yuner.fun/2021/02/18/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%B8%89%E9%9D%A2%20md/">http://blog.yuner.fun/2021/02/18/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%B8%89%E9%9D%A2%20md/</a></span>
                     </p>
                 
                 
@@ -292,10 +301,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/02/16/2021-02-06%E8%8F%9C%E9%B8%9F%E7%BD%91%E7%BB%9C%20%E4%B8%80%E9%9D%A2/">2021-02-06菜鸟一面</a>
             
-            
-            <a class="next" rel="next" href="/2021/02/08/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%BA%8C%E9%9D%A2%20/">2021-02-06阿里高德二面</a>
+            <a class="next" rel="next" href="/2021/02/17/%E7%AE%97%E6%B3%95%E5%AF%BC%E8%AE%BA-%E7%AE%97%E6%B3%95/">算法导论-算法</a>
             
         </section>
 
