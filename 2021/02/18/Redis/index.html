@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">February 18, 2021&nbsp;&nbsp;20:59:53</a>
+                        Date: <a href="#">February 18, 2021&nbsp;&nbsp;22:29:47</a>
                         </span>
                     
                     
@@ -238,7 +238,63 @@
 </ol>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">always ##aof_buf内容写入并同步到AOF文件</span><br><span class="line">everysec ##将aof_buf中内容写入到AOF文件，如果上次同步AOF文件时间距离现在超过1秒，则再次对AOF文件进行同步</span><br><span class="line">no ##将aof_buf内容写入AOF文件，但是并不对AOF文件进行同步，同步时间由操作系统决定</span><br></pre></td></tr></table></figure>
 <p>如果不设置，默认选项将会是everysec，因为always来说虽然最安全（只会丢失一次事件循环的写命令），但是性能较差，而everysec模式只不过会可能丢失1秒钟的数据，而no模式的效率和everysec相仿，但是会丢失上次同步AOF文件之后的所有写命令数据。</p>
-<h2 id="Redis高可用"><a href="#Redis高可用" class="headerlink" title="Redis高可用"></a>Redis高可用</h2><h3 id="主从"><a href="#主从" class="headerlink" title="主从"></a>主从</h3><h3 id="哨兵"><a href="#哨兵" class="headerlink" title="哨兵"></a>哨兵</h3>
+<h2 id="Redis高可用"><a href="#Redis高可用" class="headerlink" title="Redis高可用"></a>Redis高可用</h2><h3 id="主从"><a href="#主从" class="headerlink" title="主从"></a>主从</h3><p>主从模式是最简单的实现高可用的方案，核心就是主从同步。主从同步的原理如下：</p>
+<ol>
+<li>slave发送sync（redis2.8版本之后psync，效率更高）命令到master</li>
+<li>master收到sync之后，执行bgsave，生成RDB全量文件</li>
+<li>master把slave的写命令记录到缓存</li>
+<li>bgsave执行完毕之后，发送RDB文件到slave，slave执行</li>
+<li>master发送缓存中的写命令到slave，slave执行</li>
+</ol>
+<p>优点：</p>
+<ol>
+<li>读写分离降低Master的压力</li>
+<li>可以配置Slavers进行持久化，降低master压力</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>无法降低Master写压力</li>
+<li>Master宕机后集群无法使用</li>
+</ol>
+<h3 id="哨兵"><a href="#哨兵" class="headerlink" title="哨兵"></a>哨兵</h3><p>基于主从方案的缺点还是很明显的，假设master宕机，那么就不能写入数据，那么slave也就失去了作用，整个架构就不可用了，除非你手动切换，主要原因就是因为没有自动故障转移机制。而哨兵(sentinel)的功能比单纯的主从架构全面的多了，它具备自动故障转移、集群监控、消息通知等功能。</p>
+<p>哨兵可以同时监视多个主从服务器，并且在被监视的master下线时，自动将某个slave提升为master，然后由新的master继续接收命令。整个过程如下：</p>
+<ol>
+<li>初始化sentinel，将普通的redis代码替换成sentinel专用代码</li>
+<li>初始化masters字典和服务器信息，服务器信息主要保存ip:port，并记录实例的地址和ID</li>
+<li>创建和master的两个连接，命令连接和订阅连接，并且订阅sentinel:hello频道</li>
+<li>每隔10秒向master发送info命令，获取master和它下面所有slave的当前信息</li>
+<li>当发现master有新的slave之后，sentinel和新的slave同样建立两个连接，同时每个10秒发送info命令，更新master信息</li>
+<li>sentinel每隔1秒向所有服务器发送ping命令，如果某台服务器在配置的响应时间内连续返回无效回复，将会被标记为下线状态</li>
+<li>选举出领头sentinel，领头sentinel需要半数以上的sentinel同意</li>
+<li>领头sentinel从已下线的的master所有slave中挑选一个，将其转换为master</li>
+<li>让所有的slave改为从新的master复制数据</li>
+<li>将原来的master设置为新的master的从服务器，当原来master重新回复连接时，就变成了新master的从服务器</li>
+</ol>
+<p>sentinel会每隔1秒向所有实例（包括主从服务器和其他sentinel）发送ping命令，并且根据回复判断是否已经下线，这种方式叫做主观下线。当判断为主观下线时，就会向其他监视的sentinel询问，如果超过半数的投票认为已经是下线状态，则会标记为客观下线状态，同时触发故障转移。</p>
+<h3 id="Cluster集群"><a href="#Cluster集群" class="headerlink" title="Cluster集群"></a>Cluster集群</h3><p>如果说依靠哨兵可以实现redis的高可用，如果还想在支持高并发同时容纳海量的数据，那就需要redis集群。redis集群是redis提供的分布式数据存储方案，集群通过数据分片sharding来进行数据的共享，同时提供复制和故障转移的功能。</p>
+<h4 id="节点"><a href="#节点" class="headerlink" title="节点"></a>节点</h4><p>一个redis集群由多个节点node组成，而多个node之间通过cluster meet命令来进行连接，节点的握手过程：</p>
+<ol>
+<li>节点A收到客户端的cluster meet命令</li>
+<li>A根据收到的IP地址和端口号，向B发送一条meet消息</li>
+<li>节点B收到meet消息返回pong</li>
+<li>A知道B收到了meet消息，返回一条ping消息，握手成功</li>
+<li>最后，节点A将会通过gossip协议把节点B的信息传播给集群中的其他节点，其他节点也将和B进行握手</li>
+</ol>
+<h4 id="槽Slot"><a href="#槽Slot" class="headerlink" title="槽Slot"></a>槽Slot</h4><p>redis通过集群分片的形式来保存数据，整个集群数据库被分为16384个slot，集群中的每个节点可以处理0-16384个slot，当数据库16384个slot都有节点在处理时，集群处于上线状态，反之只要有一个slot没有得到处理都会处理下线状态。通过cluster addslots命令可以将slot指派给对应节点处理。</p>
+<p>slot是一个位数组，数组的长度是16384/8=2048，而数组的每一位用1表示被节点处理，0表示不处理，如图所示的话表示A节点处理0-7的slot。</p>
+<p>当客户端向节点发送命令，如果刚好找到slot属于当前节点，那么节点就执行命令，反之，则会返回一个MOVED命令到客户端指引客户端转向正确的节点。（MOVED过程是自动的</p>
+<p>如果增加或者移出节点，对于slot的重新分配也是非常方便的，redis提供了工具帮助实现slot的迁移，整个过程是完全在线的，不需要停止服务。</p>
+<h4 id="故障转移"><a href="#故障转移" class="headerlink" title="故障转移"></a>故障转移</h4><p>如果节点A向节点B发送ping消息，节点B没有在规定的时间内响应pong，那么节点A会标记节点B为pfail疑似下线状态，同时把B的状态通过消息的形式发送给其他节点，如果超过半数以上的节点都标记B为pfail状态，B就会被标记为fail下线状态，此时将会发生故障转移，优先从复制数据较多的从节点选择一个成为主节点，并且接管下线节点的slot，整个过程和哨兵非常类似，都是基于Raft协议做选举。</p>
+<h2 id="发布与订阅"><a href="#发布与订阅" class="headerlink" title="发布与订阅"></a>发布与订阅</h2><p>几乎用不到 todo</p>
+<h2 id="事务"><a href="#事务" class="headerlink" title="事务"></a>事务</h2><p>redis通过MULTI、EXEC、WATCH等命令来实现事务机制，事务执行过程将一系列多个命令按照顺序一次性执行，并且在执行期间，事务不会被中断，也不会去执行客户端的其他请求，直到所有命令执行完毕。事务的执行过程如下：</p>
+<ol>
+<li>服务端收到客户端请求，事务以MULTI开始</li>
+<li>如果客户端正处于事务状态，则会把事务放入队列同时返回给客户端QUEUED，反之则直接执行这个命令</li>
+<li>当收到客户端EXEC命令时，WATCH命令监视整个事务中的key是否有被修改，如果有则返回空回复到客户端表示失败，否则redis会遍历整个事务队列，执行队列中保存的所有命令，最后返回结果给客户端</li>
+</ol>
+<p>WATCH的机制本身是一个CAS的机制，被监视的key会被保存到一个链表中，如果某个key被修改，那么REDIS_DIRTY_CAS标志将会被打开，这时服务器会拒绝执行事务。</p>
+<h2 id="排序"><a href="#排序" class="headerlink" title="排序"></a>排序</h2><p>todo</p>
+
         </div>
 
         
