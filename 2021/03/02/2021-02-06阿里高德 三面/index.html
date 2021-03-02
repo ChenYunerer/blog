@@ -12,7 +12,7 @@
 
 
 
-<title>2021-02-06阿里高德二面 | 陈允的学习笔记</title>
+<title>2021-02-08阿里高德三面 | 陈允的学习笔记</title>
 
 
 
@@ -173,7 +173,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">2021-02-06阿里高德二面</h1>
+            <h1 class="post-title">2021-02-08阿里高德三面</h1>
             
                 <div class="post-meta">
                     
@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">February 8, 2021&nbsp;&nbsp;20:53:38</a>
+                        Date: <a href="#">March 2, 2021&nbsp;&nbsp;20:59:06</a>
                         </span>
                     
                     
@@ -198,10 +198,70 @@
         </header>
 
         <div class="post-content">
-            <h1 id="高德-数据中台Java开发工程师-二面（在线）"><a href="#高德-数据中台Java开发工程师-二面（在线）" class="headerlink" title="高德 数据中台Java开发工程师 二面（在线）"></a>高德 数据中台Java开发工程师 二面（在线）</h1><ol>
+            <h1 id="高德-数据中台Java开发工程师-三面（在线）"><a href="#高德-数据中台Java开发工程师-三面（在线）" class="headerlink" title="高德 数据中台Java开发工程师 三面（在线）"></a>高德 数据中台Java开发工程师 三面（在线）</h1><ol>
 <li>聊项目</li>
-<li>RocketMq怎么保证消息不丢失（同步双写）</li>
-<li>聊兴趣爱好、为什么想换工作等等</li>
+<li>clickhoue与其他数据库的比较，比如InfluxDB、timescaledb和Druid<ol>
+<li>InfluxDB16年开源版本不在支持集群功能</li>
+<li>timescaledb本身基于PostGresql，对于大数据量的支持较差，但是支持丰富的SQL功能</li>
+<li>Druid由于架构问题，没有对应封装，公司内部无法使用</li>
+<li>Clickshouse其他产品线有成功案例，且刚好符合我们要求</li>
+</ol>
+</li>
+<li>红黑树和AVL树比较<ol>
+<li>AVL树：平衡二叉查找树，对于平衡的要求是：一个结点的左右子树的高度差不能超过1，否则需要进行旋转来保持这个特性</li>
+<li>红黑树：对于平衡的要求是：从根节点到其他叶子结点的路径长度不能像差超过2倍，否则需要通过旋转、变色来保持这个特性</li>
+<li>所以从上述的特效来看，AVL树比红黑树更加的平衡，当然带来的代价就是每次插入都可能需要执行旋转来保持这个平衡特性，相比红黑树则是相对平衡，我认为是一种折中的方案，能保证有较快的查询性能，也能保值较快的插入性能，所以红黑树的应用更加广泛，比如Java中的TreeMap Java8之后的HashMap</li>
+</ol>
+</li>
+<li>HashMap TreeMap 的实现以及两者哪个内存占用更低<ol>
+<li>HashMap 数组+链表+红黑树</li>
+<li>TreeMap 红黑树</li>
+<li>对于内存占用TreeMap更低，因为HashMap的第一层数据结构数组的存在，第一层数组可能大部分都是空值但是占用了内存，这个应该也是hashmap的序列化方法是hashmap自定义方法的原因，默认序列化的话会序列化空数组item，浪费性能</li>
+<li>插入效率的比较，我认为是HashMap更快，因为最差情况下两者都是红黑树效率一致，其他情况下，hashmap只要通过hash计算（(h = k.hashCode()) ^ (h &gt;&gt;&gt; 16)）下标存入即可，所以我认为平均情况下hashmap更快，当然HashMap是无序的，TreeMap是有序的，如果需求设计到有序性，那TreeMap可能更快</li>
+</ol>
+</li>
+<li>使用new或是反射创建一个对象，哪个更快，以及为什么<ol>
+<li>new更快</li>
+<li>反射需要再去处理权限以及涉及到jni的调用所以更慢，还需再深入看看</li>
+<li>当时没答上来具体为什么反射慢</li>
+</ol>
+</li>
+<li>java 锁，哪些锁是可重入的<ol>
+<li>synchronized以及基于AQS的锁都是可重入的</li>
+</ol>
+</li>
+<li>nio netty poll epoll select</li>
+<li>bio是否可以使用epoll、poll，我的回答是可以，这个不懂得在看看<ol>
+<li>我理解epoll poll都是底层实现，bio是表层的表现，两者并不是强关联，就像计算机网络分层一样，计算底层是epoll上层也可以封装成bio模式</li>
+</ol>
+</li>
+<li>innodb 主键查询刷数据的流程（page页（默认16k）刷新、邻近页刷新、获取数据在文件的位置再从该位置读取文件）<ol>
+<li>这里还需要再去看看innodb的文件系统，对于索引是不是有单独文件进行存储，如果有的话，那通过索引查询的话先查询索引文件再根据索引记录的具体数据的offset去数据文件取读取数据，如果不是这样的话得看看他的具体流程</li>
+<li>还有就是对于主键的处理和对于其他非主键的辅助索引的处理是不同的，也需要了解</li>
+</ol>
+</li>
+<li>innodb b+树叶子结点通过链表相连，什么时候会用到这个链表，什么sql命令会走这个链表<ol>
+<li>order by、group by 等有排序要求的操作会使用到b+树底层的链表</li>
+</ol>
+</li>
+<li>arthas使用，以及有没有关注cost所提示的代码对于时间消耗</li>
+<li>Raft协议简述</li>
+<li>红黑树 平衡二叉树 B+树<ol>
+<li>简单讲：AVL树、红黑树都是平衡二叉树的一种，但是从特性来看，AVL树更加“平衡”</li>
+<li>B、B+树则数据M叉树，其目的都是为了降低树的高度，通常在大数据量且无法全部存储在内存，需要文件IO的场景下使用，比如Inndob的索引，目的就是通过降低树的高度，从而降低IO次数</li>
+<li>B+树相比于B树的区别在于，B树可以认为就是一颗M叉树，而B+则有其他特性，比如所有数据都存放于叶子结点，非叶子结点可以存储更多数据，从而可以产生更多叉，进一步降低高度，同时B+树所有叶子结点的数据再次通过指针进行相连形成有序链表，在一些有“有序”需求的场景下有优化效果</li>
+</ol>
+</li>
+<li>Redis是否是单线程<ol>
+<li>6.0版本之后增加了多线程模式</li>
+</ol>
+</li>
+<li>Redis的数据结构<ol>
+<li>基本数据结构：简单动态字符串、链表、字典、跳表、整数集合、压缩列表</li>
+<li>对象：字符对象、列表对象、哈希对象、集合对象、有序集合对象。每种对象都至少使用了一种基本数据结构，并且Redis会根据数据内容、大小、数量动态选择合适的基本数据类型</li>
+</ol>
+</li>
+<li>Redsi的集群相关（没有使用过集群没有问下去）</li>
 </ol>
 
         </div>
@@ -217,7 +277,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2021/02/08/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%BA%8C%E9%9D%A2%20/">http://blog.yuner.fun/2021/02/08/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%BA%8C%E9%9D%A2%20/</a></span>
+                        <span><a href="http://blog.yuner.fun/2021/03/02/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%B8%89%E9%9D%A2/">http://blog.yuner.fun/2021/03/02/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%B8%89%E9%9D%A2/</a></span>
                     </p>
                 
                 
@@ -249,10 +309,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2021/02/18/2021-02-06%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%B8%89%E9%9D%A2%20md/">2021-02-08阿里高德三面</a>
+                <a class="prev" rel="prev" href="/2021/03/02/2021-02-23%E9%98%BF%E9%87%8C%E9%AB%98%E5%BE%B7%20%E4%BA%94%E9%9D%A2/">2021-02-19阿里高德五(HR面 已发意向OFFER)</a>
             
             
-            <a class="next" rel="next" href="/2021/02/06/2021-01-25%E6%BB%B4%E6%BB%B4%E4%BA%8C%E9%9D%A2/">2021-01-25滴滴二面</a>
+            <a class="next" rel="next" href="/2021/03/02/2021-01-25%E6%BB%B4%E6%BB%B4%20%E4%BA%8C%E9%9D%A2/">2021-01-25滴滴二面</a>
             
         </section>
 
