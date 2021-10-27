@@ -12,7 +12,7 @@
 
 
 
-<title>Arthas源码分析 | 陈允的学习笔记</title>
+<title>vocabulary | 陈允的学习笔记</title>
 
 
 
@@ -107,73 +107,11 @@
             <div class="container">
     
     
-        <div class="post-toc">
-    <div class="tocbot-list">
-    </div>
-    <div class="tocbot-list-menu">
-        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
-        <a onclick="go_top()">Back to top</a>
-        <a onclick="go_bottom()">Go to bottom</a>
-    </div>
-</div>
-
-<script>
-    document.ready(
-        function () {
-            tocbot.init({
-                tocSelector: '.tocbot-list',
-                contentSelector: '.post-content',
-                headingSelector: 'h1, h2, h3, h4, h5',
-                collapseDepth: 1,
-                orderedList: false,
-                scrollSmooth: true,
-            })
-        }
-    )
-
-    function expand_toc() {
-        var b = document.querySelector(".tocbot-toc-expand");
-        tocbot.init({
-            tocSelector: '.tocbot-list',
-            contentSelector: '.post-content',
-            headingSelector: 'h1, h2, h3, h4, h5',
-            collapseDepth: 6,
-            orderedList: false,
-            scrollSmooth: true,
-        });
-        b.setAttribute("onclick", "collapse_toc()");
-        b.innerHTML = "Collapse all"
-    }
-
-    function collapse_toc() {
-        var b = document.querySelector(".tocbot-toc-expand");
-        tocbot.init({
-            tocSelector: '.tocbot-list',
-            contentSelector: '.post-content',
-            headingSelector: 'h1, h2, h3, h4, h5',
-            collapseDepth: 1,
-            orderedList: false,
-            scrollSmooth: true,
-        });
-        b.setAttribute("onclick", "expand_toc()");
-        b.innerHTML = "Expand all"
-    }
-
-    function go_top() {
-        window.scrollTo(0, 0);
-    }
-
-    function go_bottom() {
-        window.scrollTo(0, document.body.scrollHeight);
-    }
-
-</script>
-    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Arthas源码分析</h1>
+            <h1 class="post-title">vocabulary</h1>
             
                 <div class="post-meta">
                     
@@ -182,14 +120,14 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">December 5, 2020&nbsp;&nbsp;11:22:28</a>
+                        Date: <a href="#">August 22, 2021&nbsp;&nbsp;23:26:23</a>
                         </span>
                     
                     
                         <span class="post-category">
                     Category:
                             
-                                <a href="/categories/BugShooting/">BugShooting</a>
+                                <a href="/categories/vocabulary/">vocabulary</a>
                             
                         </span>
                     
@@ -198,7 +136,17 @@
         </header>
 
         <div class="post-content">
-            <h2 id="Arthas源码分析"><a href="#Arthas源码分析" class="headerlink" title="Arthas源码分析"></a>Arthas源码分析</h2>
+            <p>explicitly 明确的</p>
+<p>Well-posed 表现良好的</p>
+<p>supervised 监督</p>
+<p>unsupervised 无监督</p>
+<p>classifying classification 分类</p>
+<p>algorithm 算法</p>
+<p>prediction predict 预测</p>
+<p>cocktail 鸡尾酒</p>
+<p>segment 部门</p>
+<p>market segment 细分市场</p>
+
         </div>
 
         
@@ -212,7 +160,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2020/12/05/Arthas%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">http://blog.yuner.fun/2020/12/05/Arthas%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</a></span>
+                        <span><a href="http://blog.yuner.fun/2021/08/22/vocabulary/">http://blog.yuner.fun/2021/08/22/vocabulary/</a></span>
                     </p>
                 
                 
@@ -231,7 +179,7 @@
                 <span class="tag">
                     
                     
-                        <a href="/tags/BugShooting/"># BugShooting</a>
+                        <a href="/tags/vocabulary/"># vocabulary</a>
                     
                         
                 </span>
@@ -244,10 +192,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2020/12/05/Dubbo%20SPI/">Dubbo SPI</a>
+                <a class="prev" rel="prev" href="/2021/09/26/note/">machine learning notes</a>
             
             
-            <a class="next" rel="next" href="/2020/12/05/Tomcat%E5%90%AF%E5%8A%A8%E5%88%86%E6%9E%904_Bootstrap/">Tomcat启动分析4_Bootstrap</a>
+            <a class="next" rel="next" href="/2021/08/22/Arthas%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Arthas源码分析</a>
             
         </section>
 

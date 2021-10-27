@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">December 14, 2020&nbsp;&nbsp;23:15:49</a>
+                        Date: <a href="#">May 20, 2021&nbsp;&nbsp;11:01:23</a>
                         </span>
                     
                     
@@ -259,6 +259,7 @@
 <h3 id="重试次数"><a href="#重试次数" class="headerlink" title="重试次数"></a>重试次数</h3><p>DefaultMQPushConsumer maxReconsumeTimes默认-1表示最大重试是16次</p>
 <p>但是对于顺序消息，默认的-1将会变成无限次重试，其实也能理解，如果不能将msg发送给broker从而进入死信队列，就会造成该消息的重复投递，破坏了顺序消息的顺序性，所以必须是无限次重试。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ConsumeMessageOrderlyService.class</span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">int</span> <span class="title">getMaxReconsumeTimes</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="comment">// default reconsume times: Integer.MAX_VALUE</span></span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span>.defaultMQPushConsumer.getMaxReconsumeTimes() == -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> Integer.MAX_VALUE;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.defaultMQPushConsumer.getMaxReconsumeTimes();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
         </div>
 
         
@@ -272,7 +273,7 @@
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="http://blog.yuner.fun/2020/12/14/RocketMQ%20Order%20Msg/">http://blog.yuner.fun/2020/12/14/RocketMQ%20Order%20Msg/</a></span>
+                        <span><a href="http://blog.yuner.fun/2021/05/20/RocketMQ%20Order%20Msg/">http://blog.yuner.fun/2021/05/20/RocketMQ%20Order%20Msg/</a></span>
                     </p>
                 
                 
@@ -304,10 +305,10 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2020/12/14/RocketMQ%20Broker/">RocketMQ Broker</a>
+                <a class="prev" rel="prev" href="/2021/08/22/Arthas%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/">Arthas源码分析</a>
             
             
-            <a class="next" rel="next" href="/2020/12/14/%E4%B8%80%E6%AC%A1Tomcat%E5%90%AF%E5%8A%A8%E6%AD%BB%E9%94%81%E6%8E%92%E6%9F%A5/">一次Tomcat启动死锁排查</a>
+            <a class="next" rel="next" href="/2021/03/28/2021-03-19%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8%E9%A3%9E%E4%B9%A6%20%20%E4%BA%8C%E9%9D%A2/">2021-03-19字节跳动飞书  二面</a>
             
         </section>
 
