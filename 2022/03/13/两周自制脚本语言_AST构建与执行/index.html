@@ -182,7 +182,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">March 13, 2022&nbsp;&nbsp;10:52:04</a>
+                        Date: <a href="#">March 13, 2022&nbsp;&nbsp;15:21:22</a>
                         </span>
                     
                     
@@ -214,7 +214,11 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def abc () &#123;</span><br><span class="line">	xxx</span><br><span class="line">&#125;</span><br><span class="line">def abc (abc) &#123;</span><br><span class="line">	xxx</span><br><span class="line">&#125;</span><br><span class="line">def abc (abc，bcd) &#123;</span><br><span class="line">	xxx</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>primary、postfix、args定义了方法的调用</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">abc()</span><br><span class="line">abc(abc)</span><br><span class="line">adb(abc, bcd)</span><br></pre></td></tr></table></figure>
-<h2 id="Parser解析树"><a href="#Parser解析树" class="headerlink" title="Parser解析树"></a>Parser解析树</h2><p><img src="https://raw.githubusercontent.com/ChenYunerer/pics/master/uPic/Parser%E7%BB%93%E6%9E%84.svg" alt="Parser结构"></p>
+<h2 id="Parser解析树"><a href="#Parser解析树" class="headerlink" title="Parser解析树"></a>Parser解析树</h2><p><img src="https://raw.githubusercontent.com/ChenYunerer/pics/master/uPic/Parser.svg" alt="Parser"></p>
+<h3 id="举个例子"><a href="#举个例子" class="headerlink" title="举个例子"></a>举个例子</h3><p>这个代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">def addOne(a) &#123;</span><br><span class="line">a &#x3D; a + 1;</span><br><span class="line">&#125;</span><br><span class="line">a &#x3D; addOne(10);</span><br><span class="line">a;</span><br></pre></td></tr></table></figure>
+<p>对应的AST树为：</p>
+<p><img src="https://raw.githubusercontent.com/ChenYunerer/pics/master/uPic/AST%E4%BE%8B%E5%AD%90.svg" alt="AST例子"></p>
 
         </div>
 
